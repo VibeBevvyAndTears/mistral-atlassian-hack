@@ -32,19 +32,19 @@ Make sure you have the required CLI tools installed:
   ```
 
 ### 2. Install Dependencies
-Run the following commands from the project root:
+Run from the project root (no need to change directories):
 ```bash
 # Install root & web dependencies
 bun install
 
 # Install API python dependencies
-cd apps/api && uv sync && cd ../..
+uv sync --directory apps/api
 ```
 
 ### 3. Environment Variables Setup
+Run from the project root:
 
 #### **API Environment (`apps/api/.env`)**
-Copy the example environment file:
 ```bash
 cp apps/api/.env.example apps/api/.env
 ```
@@ -56,7 +56,6 @@ Fill in the required keys in `apps/api/.env`:
 - `MISTRAL_API_KEY`: Your API key from Mistral AI Studio
 
 #### **Web Environment (`apps/web/.env`)**
-Copy the example environment file and generate a auth secret:
 ```bash
 cp apps/web/.env.example apps/web/.env
 ```
