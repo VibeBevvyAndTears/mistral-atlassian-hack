@@ -16,10 +16,20 @@ This repository contains a fullstack application built for the hackathon.
 ## Local Setup Guide
 
 ### 1. Prerequisites & Tooling
-Ensure you have the following installed:
-- [bun](https://bun.sh/)
-- [uv](https://github.com/astral-sh/uv)
-- [mise](https://mise.jdx.dev/)
+Make sure you have the required CLI tools installed:
+
+- **bun** (JS/TS package manager):
+  ```bash
+  brew install bun  # or: curl -fsSL https://bun.sh/install | bash
+  ```
+- **uv** (Python package manager):
+  ```bash
+  brew install uv   # or: curl -LsSf https://astral.sh/uv/install.sh | sh
+  ```
+- **mise** (Task runner):
+  ```bash
+  brew install mise # or: curl https://mise.jdx.dev/install.sh | sh
+  ```
 
 ### 2. Install Dependencies
 Run the following commands from the project root:
