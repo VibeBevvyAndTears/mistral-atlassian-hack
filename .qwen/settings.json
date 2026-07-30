@@ -1,0 +1,76 @@
+{
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "name": "oma-hook-UserPromptSubmit",
+            "type": "command",
+            "command": "\"$QWEN_PROJECT_DIR/.qwen/hooks/oma-hook.sh\" --vendor 'qwen' --event 'UserPromptSubmit'",
+            "timeout": 21
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "name": "oma-hook-Stop",
+            "type": "command",
+            "command": "\"$QWEN_PROJECT_DIR/.qwen/hooks/oma-hook.sh\" --vendor 'qwen' --event 'Stop'",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "hooks": [
+          {
+            "name": "oma-hook-PreToolUse",
+            "type": "command",
+            "command": "\"$QWEN_PROJECT_DIR/.qwen/hooks/oma-hook.sh\" --vendor 'qwen' --event 'PreToolUse' --matcher 'run_shell_command'",
+            "timeout": 13
+          }
+        ],
+        "matcher": "run_shell_command"
+      }
+    ]
+  },
+  "mcpServers": {
+    "serena": {
+      "command": "oma",
+      "args": [
+        "bridge",
+        "--context",
+        "ide"
+      ],
+      "env": {
+        "SERENA_LOG_LEVEL": "info"
+      }
+    },
+    "chrome-devtools": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "chrome-devtools-mcp@latest",
+        "--no-usage-statistics",
+        "--isolated"
+      ]
+    }
+  },
+  "privacy": {
+    "usageStatisticsEnabled": false
+  },
+  "ui": {
+    "statusLine": {
+      "type": "command",
+      "command": "'bun' \"$QWEN_PROJECT_DIR/.qwen/hooks/hud.ts\""
+    }
+  },
+  "$version": 4,
+  "hooksConfig": {
+    "enabled": true
+  }
+}

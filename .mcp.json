@@ -1,0 +1,15 @@
+{
+  "mcpServers": {
+    "serena": {
+      "command": "oma",
+      "args": [
+        "bridge",
+        "--context",
+        "claude-code"
+      ],
+      "env": {
+        "SERENA_LOG_LEVEL": "info"
+      }
+    }
+  }
+}

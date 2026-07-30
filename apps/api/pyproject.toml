@@ -1,0 +1,124 @@
+[project]
+name = "api"
+version = "0.1.0"
+description = "FastAPI backend API"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi[standard]>=0.136.3",
+    "sqlalchemy[asyncio]>=2.0.50",
+    "alembic>=1.18.4",
+    "pydantic-settings>=2.14.1",
+    "asyncpg>=0.31.0",
+    "python-multipart>=0.0.32",
+    "httpx>=0.28.1",
+    "tenacity>=9.1.4",
+    "redis>=8.0.0",
+    "structlog>=25.5.0",
+    "opentelemetry-api>=1.42.1",
+    "opentelemetry-sdk>=1.42.1",
+    "opentelemetry-instrumentation-fastapi>=0.63b1",
+    "opentelemetry-instrumentation-sqlalchemy>=0.63b1",
+    "opentelemetry-instrumentation-httpx>=0.63b1",
+    "opentelemetry-instrumentation-redis>=0.63b1",
+    "opentelemetry-exporter-otlp>=1.42.1",
+    "jwcrypto>=1.5.7",
+    "psycopg2-binary>=2.9.12",
+    "bcrypt>=5.0.0",
+]
+
+# Optional GenAI SDK auto-instrumentation (OTel GenAI semconv).
+# Install the one matching AI_PROVIDER, e.g. `uv sync --extra genai-openai`.
+# NOTE: as of 2026-Q2 these two cannot be installed together — openai-v2 pins
+# opentelemetry-util-genai>=0.4b0 while google-genai pins <0.4b0. The runtime
+# (src/lib/ai/telemetry.py) import-guards both, so absence is a safe no-op.
+[project.optional-dependencies]
+genai-openai = ["opentelemetry-instrumentation-openai-v2>=2.4b0"]
+genai-google = ["opentelemetry-instrumentation-google-genai>=0.7b1"]
+# Object storage backend (STORAGE_BACKEND="azure"). azure-identity enables
+# managed/workload identity; connection-string and shared-key auth need only
+# azure-storage-blob. Install with `uv sync --extra storage-azure`.
+storage-azure = [
+    "azure-storage-blob>=12.24.0",
+    "azure-identity>=1.19.0",
+    "aiohttp>=3.10.0",
+]
+
+[dependency-groups]
+dev = [
+    "ruff>=0.15.16",
+    "poethepoet>=0.46.0",
+    "mypy>=2.1.0",
+    "pytest>=9.0.3",
+    "pytest-asyncio>=1.4.0",
+    "pytest-cov>=7.1.0",
+    "factory-boy>=3.3.3",
+    "aiosqlite>=0.22.1",
+    "pytest-xdist>=3.8.0",
+]
+
+[tool.uv]
+managed = true
+# openai-v2 and google-genai pin incompatible opentelemetry-util-genai ranges
+# (2026-Q2); declare them mutually exclusive so each resolves independently.
+conflicts = [[{ extra = "genai-openai" }, { extra = "genai-google" }]]
+
+[tool.poe.tasks]
+dev = "fastapi dev src/main.py --port 8000"
+start = "fastapi run src/main.py --port 8000"
+
+# Database
+migrate = "alembic upgrade head"
+"migrate-create" = "alembic revision --autogenerate -m"
+"migrate-down" = "alembic downgrade -1"
+
+# Linting & Formatting
+lint = "ruff check --fix --unsafe-fixes ."
+format = "ruff format ."
+check = ["lint", "format"]
+
+# Type checking
+typecheck = "mypy src"
+
+# All checks
+"all-checks" = ["check", "typecheck"]
+
+# Testing
+test = "pytest tests/ -n 4"
+"test:ci" = "pytest tests/ -q"
+"test:cov" = "pytest tests/ --cov=src --cov-report=html"
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+plugins = ["pydantic.mypy"]
+exclude = ["alembic"]
+
+[[tool.mypy.overrides]]
+module = ["asyncpg.*"]
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = ["redis.asyncio.*"]
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = ["jwcrypto.*"]
+ignore_missing_imports = true
+
+# Optional GenAI auto-instrumentation packages (installed via extras only).
+[[tool.mypy.overrides]]
+module = [
+    "opentelemetry.instrumentation.openai_v2.*",
+    "opentelemetry.instrumentation.google_genai.*",
+]
+ignore_missing_imports = true
+
+# Optional object storage SDKs (installed via the storage-azure extra only).
+[[tool.mypy.overrides]]
+module = ["azure.*"]
+ignore_missing_imports = true
