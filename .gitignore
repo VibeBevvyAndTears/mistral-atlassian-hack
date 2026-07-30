@@ -101,3 +101,5 @@ docs/plans/
 
 # monodep store (hardlink dedup)
 .monodep/
+.vercel
+.env*.local
