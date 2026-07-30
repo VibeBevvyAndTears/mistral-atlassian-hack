@@ -27,10 +27,19 @@ class Base(DeclarativeBase):
 
 
 # Async engine
+engine_kwargs = {
+    "echo": settings.PROJECT_ENV == "local",
+    "pool_pre_ping": True,
+}
+if settings.DATABASE_URL.startswith("postgresql"):
+    engine_kwargs["connect_args"] = {
+        "statement_cache_size": 0,
+        "prepared_statement_cache_size": 0,
+    }
+
 engine = create_async_engine(
     settings.DATABASE_URL,
-    echo=settings.PROJECT_ENV == "local",
-    pool_pre_ping=True,
+    **engine_kwargs,
 )
 
 # Async session factory
