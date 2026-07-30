@@ -3,8 +3,8 @@ import { z } from "zod";
 
 export const env = createEnv({
   server: {
-    BETTER_AUTH_SECRET: z.string().min(32, "Secret must be at least 32 characters"),
-    BETTER_AUTH_URL: z.string().url().optional().default("http://localhost:3000"),
+    // BETTER_AUTH_SECRET: z.string().min(32, "Secret must be at least 32 characters"),
+    // BETTER_AUTH_URL: z.string().url().optional().default("http://localhost:3000"),
     GOOGLE_CLIENT_ID: z.string().optional().or(z.literal("")),
     GOOGLE_CLIENT_SECRET: z.string().optional().or(z.literal("")),
     GITHUB_CLIENT_ID: z.string().optional().or(z.literal("")),
@@ -22,7 +22,7 @@ export const env = createEnv({
   },
 
   client: {
-    NEXT_PUBLIC_BETTER_AUTH_URL: z.string().url().optional().default("http://localhost:3000"),
+    // NEXT_PUBLIC_BETTER_AUTH_URL: z.string().url().optional().default("http://localhost:3000"),
     NEXT_PUBLIC_API_URL: z.string().url().optional().default("http://localhost:8000"),
     NEXT_PUBLIC_SITE_URL: z.string().url().optional().default("https://example.com"),
     NEXT_PUBLIC_ENABLE_DEVTOOLS: z.enum(["true", "false"]).optional().default("false"),
@@ -30,8 +30,8 @@ export const env = createEnv({
   },
 
   runtimeEnv: {
-    BETTER_AUTH_SECRET: process.env.BETTER_AUTH_SECRET,
-    BETTER_AUTH_URL: process.env.BETTER_AUTH_URL,
+    // BETTER_AUTH_SECRET: process.env.BETTER_AUTH_SECRET,
+    // BETTER_AUTH_URL: process.env.BETTER_AUTH_URL,
     GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
     GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET,
     GITHUB_CLIENT_ID: process.env.GITHUB_CLIENT_ID,
@@ -42,7 +42,7 @@ export const env = createEnv({
     EMAIL_FROM: process.env.EMAIL_FROM,
     OTEL_SERVICE_NAME: process.env.OTEL_SERVICE_NAME,
     OTEL_SAMPLE_RATE: process.env.OTEL_SAMPLE_RATE,
-    NEXT_PUBLIC_BETTER_AUTH_URL: process.env.NEXT_PUBLIC_BETTER_AUTH_URL,
+    // NEXT_PUBLIC_BETTER_AUTH_URL: process.env.NEXT_PUBLIC_BETTER_AUTH_URL,
     NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,
     NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL,
     NEXT_PUBLIC_ENABLE_DEVTOOLS: process.env.NEXT_PUBLIC_ENABLE_DEVTOOLS,
