@@ -1,0 +1,5 @@
+# Pyrefly configuration for apps/api
+# Adds the project root (apps/api/) to the search path so that
+# `from src.lib.config import settings` resolves correctly.
+[project]
+search_path = ["."]

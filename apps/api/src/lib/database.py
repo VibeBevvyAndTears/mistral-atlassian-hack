@@ -1,4 +1,5 @@
 from collections.abc import AsyncGenerator
+from typing import Any
 
 from sqlalchemy import MetaData
 from sqlalchemy.ext.asyncio import (
@@ -27,7 +28,7 @@ class Base(DeclarativeBase):
 
 
 # Async engine
-engine_kwargs = {
+engine_kwargs: dict[str, Any] = {
     "echo": settings.PROJECT_ENV == "local",
     "pool_pre_ping": True,
 }

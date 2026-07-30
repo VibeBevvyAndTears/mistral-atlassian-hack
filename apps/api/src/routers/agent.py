@@ -2,6 +2,7 @@ import os
 
 from fastapi import APIRouter
 from mistralai import Mistral
+from mistralai.models import AssistantMessage, SystemMessage, ToolMessage, UserMessage
 from pydantic import BaseModel
 
 router = APIRouter()
@@ -22,17 +23,26 @@ class EmbedRequest(BaseModel):
 
 async def call_agent(prompt: str) -> str:
     client = get_mistral_client()
+    messages: list[AssistantMessage | SystemMessage | ToolMessage | UserMessage] = [
+        UserMessage(content=prompt)
+    ]
     response = await client.chat.complete_async(
         model="mistral-large-latest",
-        messages=[{"role": "user", "content": prompt}],
+        messages=messages,
     )
-    return response.choices[0].message.content or ""
+    if response is None or not response.choices:
+        return ""
+    content = response.choices[0].message.content
+    if isinstance(content, str):
+        return content
+    return ""
 
 
 async def embed_text(text: str) -> list[float]:
     client = get_mistral_client()
     resp = await client.embeddings.create_async(model="mistral-embed", inputs=[text])
-    return resp.data[0].embedding
+    embedding = resp.data[0].embedding
+    return embedding if embedding is not None else []
 
 
 @router.post("/chat")

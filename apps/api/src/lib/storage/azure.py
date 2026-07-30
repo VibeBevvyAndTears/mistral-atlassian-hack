@@ -124,7 +124,9 @@ class AzureBlobStorageProvider(StorageProvider):
             )
             raise StorageConfigurationError(msg) from exc
 
-        client = BlobServiceClient(account_url, credential=DefaultAzureCredential())
+        client = BlobServiceClient(
+            account_url, credential=DefaultAzureCredential()
+        )
         return cls(client, account_name, account_key=None)
 
     async def upload(
@@ -141,7 +143,7 @@ class AzureBlobStorageProvider(StorageProvider):
         await blob_client.upload_blob(
             data, overwrite=True, content_settings=content_settings
         )
-        return blob_client.url
+        return str(blob_client.url)
 
     async def download(self, bucket: str, key: str) -> bytes:
         blob_client = self._client.get_blob_client(container=bucket, blob=key)
@@ -149,7 +151,7 @@ class AzureBlobStorageProvider(StorageProvider):
             stream = await blob_client.download_blob()
         except ResourceNotFoundError as exc:
             raise FileNotFoundError(f"{bucket}/{key}") from exc
-        return await stream.readall()
+        return await stream.readall()  # type: ignore[no-any-return]
 
     async def delete(self, bucket: str, key: str) -> None:
         blob_client = self._client.get_blob_client(container=bucket, blob=key)

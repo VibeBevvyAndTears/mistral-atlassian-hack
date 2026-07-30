@@ -1,11 +1,35 @@
 {
   "@@locale": "ko",
   "appTitle": "풀스택 스타터",
+  "@appTitle": {
+    "description": "The app title"
+  },
   "loading": "로딩 중...",
+  "@loading": {
+    "description": "Loading indicator text"
+  },
   "error": "오류가 발생했습니다",
+  "@error": {
+    "description": "Generic error message"
+  },
   "retry": "재시도",
+  "@retry": {
+    "description": "Retry button text"
+  },
   "save": "저장",
+  "@save": {
+    "description": "Save button text"
+  },
   "cancel": "취소",
+  "@cancel": {
+    "description": "Cancel button text"
+  },
   "confirm": "확인",
-  "delete": "삭제"
+  "@confirm": {
+    "description": "Confirm button text"
+  },
+  "delete": "삭제",
+  "@delete": {
+    "description": "Delete button text"
+  }
 }

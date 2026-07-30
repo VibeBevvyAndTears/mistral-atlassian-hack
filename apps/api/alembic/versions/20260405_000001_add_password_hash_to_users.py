@@ -20,4 +20,6 @@ def upgrade() -> None:
 
 
 def downgrade() -> None:
+    # No action needed as password_hash was included in initial schema migration
     pass
+
