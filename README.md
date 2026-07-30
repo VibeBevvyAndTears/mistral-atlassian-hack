@@ -76,9 +76,13 @@ Run both API and Web servers concurrently:
 mise dev:web
 ```
 
-Access the applications at:
-- **Frontend App**: [http://localhost:3000](http://localhost:3000)
-- **Backend Swagger Docs**: [http://localhost:8000/docs](http://localhost:8000/docs)
+### 6. Stop Development Servers
+To stop the dev servers running in your terminal, press `Ctrl+C`.
+
+If a background process remains running or ports `3000`/`8000` stay blocked, you can kill all running dev processes with:
+```bash
+mise dev:stop
+```
 
 ---
 
