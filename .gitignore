@@ -98,3 +98,6 @@ docs/generated/
 .agents/backup/
 
 docs/plans/
+
+# monodep store (hardlink dedup)
+.monodep/

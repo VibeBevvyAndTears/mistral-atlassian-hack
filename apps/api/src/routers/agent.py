@@ -1,4 +1,5 @@
 import os
+
 from fastapi import APIRouter
 from mistralai import Mistral
 from pydantic import BaseModel
