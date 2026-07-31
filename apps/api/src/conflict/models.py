@@ -71,6 +71,12 @@ class Decision(Base):
     owner_team_id: Mapped[uuid_lib.UUID | None] = mapped_column(
         _Uuid, ForeignKey("teams.id", ondelete="SET NULL"), nullable=True
     )
+    channel_id: Mapped[uuid_lib.UUID | None] = mapped_column(
+        _Uuid, ForeignKey("channels.id", ondelete="SET NULL"), nullable=True, index=True
+    )
+    superseded_by: Mapped[uuid_lib.UUID | None] = mapped_column(
+        _Uuid, ForeignKey("decisions.id", ondelete="SET NULL"), nullable=True
+    )
     status: Mapped[str] = mapped_column(String(32), nullable=False, default="open", index=True)  # noqa: E501
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), nullable=False
@@ -109,4 +115,8 @@ class DecisionResponse(BaseModel):
     source: str
     status: str = "open"
     owner_team_id: str | None = None
+    owner_team_name: str | None = None
+    channel_id: str | None = None
+    superseded_by: str | None = None
     created_at: datetime
+

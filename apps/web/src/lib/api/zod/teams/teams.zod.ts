@@ -39,14 +39,42 @@ export const CreateInviteApiTeamsTeamIdInvitesPostHeader = zod.object({
   "X-Team-Id": zod.union([zod.string(),zod.null()]).optional()
 })
 
-export const createInviteApiTeamsTeamIdInvitesPostBodyEmailMin = 3;
-export const createInviteApiTeamsTeamIdInvitesPostBodyEmailMax = 255;
+export const createInviteApiTeamsTeamIdInvitesPostBodyEmailOneMin = 3;
+export const createInviteApiTeamsTeamIdInvitesPostBodyEmailOneMax = 255;
+
+export const createInviteApiTeamsTeamIdInvitesPostBodyUsernameOneMin = 3;
+export const createInviteApiTeamsTeamIdInvitesPostBodyUsernameOneMax = 32;
 
 export const createInviteApiTeamsTeamIdInvitesPostBodyRoleDefault = `member`;
 
 export const CreateInviteApiTeamsTeamIdInvitesPostBody = zod.object({
-  "email": zod.string().min(createInviteApiTeamsTeamIdInvitesPostBodyEmailMin).max(createInviteApiTeamsTeamIdInvitesPostBodyEmailMax),
+  "email": zod.union([zod.string().min(createInviteApiTeamsTeamIdInvitesPostBodyEmailOneMin).max(createInviteApiTeamsTeamIdInvitesPostBodyEmailOneMax),zod.null()]).optional(),
+  "username": zod.union([zod.string().min(createInviteApiTeamsTeamIdInvitesPostBodyUsernameOneMin).max(createInviteApiTeamsTeamIdInvitesPostBodyUsernameOneMax),zod.null()]).optional(),
   "role": zod.string().default(createInviteApiTeamsTeamIdInvitesPostBodyRoleDefault)
+}).describe('Invite by email and\/or username (at least one required).')
+
+/**
+ * @summary Accept Invite
+ */
+export const acceptInviteApiInvitesAcceptPostBodyTokenMin = 8;
+export const acceptInviteApiInvitesAcceptPostBodyTokenMax = 128;
+
+
+
+export const AcceptInviteApiInvitesAcceptPostBody = zod.object({
+  "token": zod.string().min(acceptInviteApiInvitesAcceptPostBodyTokenMin).max(acceptInviteApiInvitesAcceptPostBodyTokenMax)
+})
+
+export const acceptInviteApiInvitesAcceptPostResponseAddedImmediatelyDefault = false;
+
+export const AcceptInviteApiInvitesAcceptPostResponse = zod.object({
+  "id": zod.string(),
+  "team_id": zod.string(),
+  "email": zod.string(),
+  "role": zod.string(),
+  "token": zod.string(),
+  "created_at": zod.iso.datetime({}),
+  "added_immediately": zod.boolean().default(acceptInviteApiInvitesAcceptPostResponseAddedImmediatelyDefault)
 })
 
 /**

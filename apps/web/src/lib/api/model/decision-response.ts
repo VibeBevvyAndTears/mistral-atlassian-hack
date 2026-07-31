@@ -14,5 +14,8 @@ export interface DecisionResponse {
   source: string;
   status?: string;
   owner_team_id?: string | null;
+  owner_team_name?: string | null;
+  channel_id?: string | null;
+  superseded_by?: string | null;
   created_at: string;
 }

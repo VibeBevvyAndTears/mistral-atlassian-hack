@@ -29,6 +29,31 @@ export const EnsureChannelApiOrgsOrgIdChannelsPostBody = zod.object({
 })
 
 /**
+ * @summary List Team Channels
+ */
+export const ListTeamChannelsApiTeamsTeamIdChannelsGetParams = zod.object({
+  "team_id": zod.uuid()
+})
+
+export const ListTeamChannelsApiTeamsTeamIdChannelsGetHeader = zod.object({
+  "X-Org-Id": zod.union([zod.string(),zod.null()]).optional(),
+  "X-Team-Id": zod.union([zod.string(),zod.null()]).optional()
+})
+
+export const ListTeamChannelsApiTeamsTeamIdChannelsGetResponseItem = zod.object({
+  "id": zod.string(),
+  "org_id": zod.string(),
+  "team_a_id": zod.string(),
+  "team_b_id": zod.string(),
+  "team_a_name": zod.union([zod.string(),zod.null()]).optional(),
+  "team_b_name": zod.union([zod.string(),zod.null()]).optional(),
+  "peer_team_id": zod.union([zod.string(),zod.null()]).optional(),
+  "peer_team_name": zod.union([zod.string(),zod.null()]).optional(),
+  "created_at": zod.iso.datetime({})
+})
+export const ListTeamChannelsApiTeamsTeamIdChannelsGetResponse = zod.array(ListTeamChannelsApiTeamsTeamIdChannelsGetResponseItem)
+
+/**
  * @summary Create Package
  */
 export const CreatePackageApiTeamsTeamIdPackagesPostParams = zod.object({

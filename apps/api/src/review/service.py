@@ -358,8 +358,8 @@ async def create_review_action(
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT, detail="review_action_exists"
         ) from exc
-    # FR-6.4 — mark sender-team decisions contested / open from post review
-    if action in ("request_changes", "blocked"):
+    # FR-6.4 — mark sender-team decisions contested / agreed from post review
+    if action in ("agree", "request_changes", "blocked"):
         from src.channels.models import Package
         from src.conflict.models import Decision
 
@@ -370,12 +370,17 @@ async def create_review_action(
                     select(Decision).where(
                         Decision.org_id == org_id,
                         Decision.team_id == pkg.team_id,
-                        Decision.status == "open",
+                        Decision.status.in_(("open", "proposed", "contested")),
                     )
                 )
             ).scalars().all()
             for d in decisions:
-                d.status = "contested"
+                if action == "agree":
+                    d.status = "agreed"
+                else:
+                    d.status = "contested"
+                if pkg.channel_id is not None and d.channel_id is None:
+                    d.channel_id = pkg.channel_id
             await db.flush()
     return ReviewActionResponse(
         id=str(row.id),

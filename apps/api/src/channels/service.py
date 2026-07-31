@@ -66,14 +66,60 @@ async def get_or_create_channel(
     return channel
 
 
-def channel_response(c: Channel) -> ChannelResponse:
+def channel_response(
+    c: Channel,
+    *,
+    team_a_name: str | None = None,
+    team_b_name: str | None = None,
+    peer_team_id: UUID | None = None,
+    peer_team_name: str | None = None,
+) -> ChannelResponse:
     return ChannelResponse(
         id=str(c.id),
         org_id=str(c.org_id),
         team_a_id=str(c.team_a_id),
         team_b_id=str(c.team_b_id),
+        team_a_name=team_a_name,
+        team_b_name=team_b_name,
+        peer_team_id=str(peer_team_id) if peer_team_id else None,
+        peer_team_name=peer_team_name,
         created_at=c.created_at,
     )
+
+
+async def list_team_channels(
+    db: AsyncSession, *, org_id: UUID, team_id: UUID
+) -> list[ChannelResponse]:
+    rows = (
+        await db.execute(
+            select(Channel)
+            .where(
+                Channel.org_id == org_id,
+                (Channel.team_a_id == team_id) | (Channel.team_b_id == team_id),
+            )
+            .order_by(Channel.created_at.desc())
+        )
+    ).scalars().all()
+    team_ids = {c.team_a_id for c in rows} | {c.team_b_id for c in rows}
+    names: dict[UUID, str] = {}
+    if team_ids:
+        teams = (
+            await db.execute(select(Team).where(Team.id.in_(team_ids)))
+        ).scalars().all()
+        names = {t.id: t.name for t in teams}
+    out: list[ChannelResponse] = []
+    for c in rows:
+        peer = c.team_b_id if c.team_a_id == team_id else c.team_a_id
+        out.append(
+            channel_response(
+                c,
+                team_a_name=names.get(c.team_a_id),
+                team_b_name=names.get(c.team_b_id),
+                peer_team_id=peer,
+                peer_team_name=names.get(peer),
+            )
+        )
+    return out
 
 
 async def run_presend_checklist(
@@ -139,11 +185,14 @@ async def run_presend_checklist(
                 Decision.org_id == org_id,
                 Decision.team_id == team_id,
                 Decision.owner_team_id.is_(None),
+                Decision.status.notin_(("superseded",)),
             )
         )
     ).scalars().all()
-    # FR-9.5 — unowned decision always fails the checklist
+    # FR-9.5 — unowned decision always fails the checklist (receiver/owner mandatory)
     checks["no_unowned_decisions"] = len(unowned) == 0
+    checks["unowned_decision_ids"] = [str(d.id) for d in unowned]
+    checks["unowned_decision_titles"] = [d.title for d in unowned]
 
     dangling = False
     if included_node_ids:
@@ -216,6 +265,11 @@ async def create_package(
         )
     channel = await get_or_create_channel(
         db, org_id=org_id, team_a=team_id, team_b=target_team_id
+    )
+    from src.conflict import service as conflict_service
+
+    await conflict_service.attach_decisions_to_channel(
+        db, org_id=org_id, team_id=team_id, channel_id=channel.id
     )
     node_ids = list(included_node_ids or [])
     checklist, bypassed = await run_presend_checklist(
@@ -298,9 +352,17 @@ async def enqueue_send(
             status_code=status.HTTP_404_NOT_FOUND, detail="Package not found"
         )
     if not (pkg.checklist or {}).get("ok"):
+        checklist = pkg.checklist or {}
+        detail = "Pre-send checklist failed"
+        if checklist.get("no_unowned_decisions") is False:
+            titles = checklist.get("unowned_decision_titles") or []
+            detail = (
+                "Cannot send: every decision needs an owner (receiver). "
+                f"Unowned: {', '.join(titles) if titles else 'unknown'}"
+            )
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Pre-send checklist failed",
+            detail=detail,
         )
     if acknowledge_conflicts:
         pkg.conflicts_acknowledged = True

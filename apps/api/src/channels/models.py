@@ -188,6 +188,10 @@ class ChannelResponse(BaseModel):
     org_id: str
     team_a_id: str
     team_b_id: str
+    team_a_name: str | None = None
+    team_b_name: str | None = None
+    peer_team_id: str | None = None
+    peer_team_name: str | None = None
     created_at: datetime
 
 

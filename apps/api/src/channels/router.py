@@ -52,6 +52,21 @@ async def ensure_channel(
     return channels_service.channel_response(channel)
 
 
+@router.get("/teams/{team_id}/channels", response_model=list[ChannelResponse])
+async def list_team_channels(
+    team_id: UUID,
+    scope: TenantScopeDep,
+    db: DBSession,
+) -> list[ChannelResponse]:
+    if scope.team_id != team_id:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Team not found"
+        )
+    return await channels_service.list_team_channels(
+        db, org_id=scope.org_id, team_id=team_id
+    )
+
+
 @router.post(
     "/teams/{team_id}/packages",
     response_model=PackageResponse,

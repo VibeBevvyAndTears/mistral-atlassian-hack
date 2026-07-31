@@ -5,11 +5,11 @@
  * OpenAPI spec version: 0.1.0
  */
 
+/**
+ * Invite by email and/or username (at least one required).
+ */
 export interface InviteCreate {
-  /**
-     * @minLength 3
-     * @maxLength 255
-     */
-  email: string;
+  email?: string | null;
+  username?: string | null;
   role?: string;
 }

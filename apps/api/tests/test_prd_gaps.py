@@ -177,6 +177,135 @@ def test_checklist_unowned_decision_fails(client: TestClient) -> None:
     checks = asyncio.run(_check())
     assert checks["no_unowned_decisions"] is False
     assert checks["ok"] is False
+    assert "Unowned" in checks["unowned_decision_titles"]
+
+
+def test_channel_decision_register_and_send_blocks_unowned(client: TestClient) -> None:
+    import asyncio
+
+    from src.conflict.models import Decision
+    from src.lib.database import async_session_factory
+
+    token = _register(client, f"dec-{uuid.uuid4().hex[:8]}@example.com")
+    org = client.post(
+        "/api/orgs", json={"name": "DecOrg"}, headers=_auth(token)
+    ).json()["id"]
+    eng = client.post(
+        f"/api/orgs/{org}/teams",
+        json={"name": "Engineering"},
+        headers=_auth(token, org),
+    ).json()["id"]
+    mkt = client.post(
+        f"/api/orgs/{org}/teams",
+        json={"name": "Marketing"},
+        headers=_auth(token, org),
+    ).json()["id"]
+    design = client.post(
+        f"/api/orgs/{org}/teams",
+        json={"name": "Design"},
+        headers=_auth(token, org),
+    ).json()["id"]
+    client.put(
+        f"/api/teams/{eng}/profile",
+        json={"data": {"tone": "plain"}},
+        headers=_auth(token, org, eng),
+    )
+
+    ch_mkt = client.post(
+        f"/api/orgs/{org}/channels",
+        json={"team_a_id": eng, "team_b_id": mkt},
+        headers=_auth(token, org, eng),
+    )
+    assert ch_mkt.status_code == 201, ch_mkt.text
+    ch_design = client.post(
+        f"/api/orgs/{org}/channels",
+        json={"team_a_id": eng, "team_b_id": design},
+        headers=_auth(token, org, eng),
+    )
+    assert ch_design.status_code == 201, ch_design.text
+
+    listed = client.get(
+        f"/api/teams/{eng}/channels",
+        headers=_auth(token, org, eng),
+    )
+    assert listed.status_code == 200
+    peers = {c["peer_team_name"] for c in listed.json()}
+    assert peers == {"Marketing", "Design"}
+
+    async def _seed() -> None:
+        async with async_session_factory() as session:
+            session.add(
+                Decision(
+                    id=uuid.uuid4(),
+                    org_id=UUID(org),
+                    team_id=UUID(eng),
+                    claim_id=uuid.uuid4(),
+                    title="Region list",
+                    body="No owner yet",
+                    source="test",
+                    owner_team_id=None,
+                    status="open",
+                    channel_id=UUID(ch_mkt.json()["id"]),
+                )
+            )
+            session.add(
+                Decision(
+                    id=uuid.uuid4(),
+                    org_id=UUID(org),
+                    team_id=UUID(eng),
+                    claim_id=uuid.uuid4(),
+                    title="Palette",
+                    body="Design-only",
+                    source="test",
+                    owner_team_id=UUID(eng),
+                    status="open",
+                    channel_id=UUID(ch_design.json()["id"]),
+                )
+            )
+            await session.commit()
+
+    asyncio.run(_seed())
+
+    mkt_decisions = client.get(
+        f"/api/channels/{ch_mkt.json()['id']}/decisions",
+        params={"status": "all"},
+        headers=_auth(token, org, eng),
+    )
+    assert mkt_decisions.status_code == 200, mkt_decisions.text
+    titles = {d["title"] for d in mkt_decisions.json()}
+    assert "Region list" in titles
+    assert "Palette" not in titles
+
+    design_decisions = client.get(
+        f"/api/channels/{ch_design.json()['id']}/decisions",
+        params={"status": "all"},
+        headers=_auth(token, org, eng),
+    )
+    assert design_decisions.status_code == 200
+    design_titles = {d["title"] for d in design_decisions.json()}
+    assert "Palette" in design_titles
+    assert "Region list" not in design_titles
+
+    pkg = client.post(
+        f"/api/teams/{eng}/packages",
+        json={
+            "title": "Handoff",
+            "body": "Ship Friday",
+            "target_team_id": mkt,
+            "bypass_incomplete_pipeline": True,
+        },
+        headers=_auth(token, org, eng),
+    )
+    assert pkg.status_code == 201, pkg.text
+    assert pkg.json()["checklist"]["ok"] is False
+    assert pkg.json()["checklist"]["no_unowned_decisions"] is False
+
+    sent = client.post(
+        f"/api/packages/{pkg.json()['id']}/send",
+        headers=_auth(token, org, eng),
+    )
+    assert sent.status_code == 400
+    assert "owner" in sent.json()["detail"].lower()
 
 
 def test_decision_filter_and_upload_empty(client: TestClient) -> None:

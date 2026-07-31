@@ -37,6 +37,7 @@ import {
 
 import type {
   HTTPValidationError,
+  InviteAcceptRequest,
   InviteCreate,
   InviteResponse,
   ListMembersApiTeamsTeamIdMembersGet200Item,
@@ -180,6 +181,71 @@ export const useCreateInviteApiTeamsTeamIdInvitesPost = <TError = HTTPValidation
         TContext
       > => {
       return useMutation(useCreateInviteApiTeamsTeamIdInvitesPostMutationOptions(options), queryClient);
+    }
+    /**
+ * @summary Accept Invite
+ */
+export const useAcceptInviteApiInvitesAcceptPostHook = () => {
+        const acceptInviteApiInvitesAcceptPost = useCustomInstance<InviteResponse>();
+
+        return useCallback((
+    inviteAcceptRequest: InviteAcceptRequest,
+ signal?: AbortSignal
+) => {
+        return acceptInviteApiInvitesAcceptPost(
+          {url: `/api/invites/accept`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: inviteAcceptRequest, signal
+    },
+          );
+        }, [acceptInviteApiInvitesAcceptPost])
+      }
+
+
+
+export const useAcceptInviteApiInvitesAcceptPostMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<ReturnType<typeof useAcceptInviteApiInvitesAcceptPostHook>>>, TError,{data: InviteAcceptRequest}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<ReturnType<typeof useAcceptInviteApiInvitesAcceptPostHook>>>, TError,{data: InviteAcceptRequest}, TContext> => {
+
+const mutationKey = ['acceptInviteApiInvitesAcceptPost'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      const acceptInviteApiInvitesAcceptPost =  useAcceptInviteApiInvitesAcceptPostHook()
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<ReturnType<typeof useAcceptInviteApiInvitesAcceptPostHook>>>, {data: InviteAcceptRequest}> = (props) => {
+          const {data} = props ?? {};
+
+          return  acceptInviteApiInvitesAcceptPost(data,)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type AcceptInviteApiInvitesAcceptPostMutationResult = NonNullable<Awaited<ReturnType<ReturnType<typeof useAcceptInviteApiInvitesAcceptPostHook>>>>
+    export type AcceptInviteApiInvitesAcceptPostMutationBody = InviteAcceptRequest
+    export type AcceptInviteApiInvitesAcceptPostMutationError = HTTPValidationError
+
+    /**
+ * @summary Accept Invite
+ */
+export const useAcceptInviteApiInvitesAcceptPost = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<ReturnType<typeof useAcceptInviteApiInvitesAcceptPostHook>>>, TError,{data: InviteAcceptRequest}, TContext>, }
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<ReturnType<typeof useAcceptInviteApiInvitesAcceptPostHook>>>,
+        TError,
+        {data: InviteAcceptRequest},
+        TContext
+      > => {
+      return useMutation(useAcceptInviteApiInvitesAcceptPostMutationOptions(options), queryClient);
     }
     /**
  * @summary Remove Member

@@ -83,3 +83,21 @@ async def list_team_decisions(
     return await conflict_service.list_decisions(
         db, org_id=scope.org_id, team_id=team_id, status_filter=status_filter
     )
+
+
+@router.get("/channels/{channel_id}/decisions", response_model=list[DecisionResponse])
+async def list_channel_decisions(
+    channel_id: UUID,
+    scope: TenantScopeDep,
+    db: DBSession,
+    status_filter: str | None = Query(default="all", alias="status"),
+) -> list[DecisionResponse]:
+    if scope.team_id is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Channel not found")  # noqa: E501
+    return await conflict_service.list_channel_decisions(
+        db,
+        org_id=scope.org_id,
+        team_id=scope.team_id,
+        channel_id=channel_id,
+        status_filter=status_filter,
+    )

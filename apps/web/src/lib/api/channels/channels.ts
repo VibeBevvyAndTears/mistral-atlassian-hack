@@ -120,6 +120,222 @@ export const useEnsureChannelApiOrgsOrgIdChannelsPost = <TError = HTTPValidation
       return useMutation(useEnsureChannelApiOrgsOrgIdChannelsPostMutationOptions(options), queryClient);
     }
     /**
+ * @summary List Team Channels
+ */
+export const useListTeamChannelsApiTeamsTeamIdChannelsGetHook = () => {
+        const listTeamChannelsApiTeamsTeamIdChannelsGet = useCustomInstance<ChannelResponse[]>();
+
+        return useCallback((
+    teamId: string,
+ signal?: AbortSignal
+) => {
+        return listTeamChannelsApiTeamsTeamIdChannelsGet(
+          {url: `/api/teams/${teamId}/channels`, method: 'GET', signal
+    },
+          );
+        }, [listTeamChannelsApiTeamsTeamIdChannelsGet])
+      }
+
+
+
+
+export const getListTeamChannelsApiTeamsTeamIdChannelsGetInfiniteQueryKey = (teamId: string,) => {
+    return [
+    'infinite', `/api/teams/${teamId}/channels`
+    ] as const;
+    }
+
+export const getListTeamChannelsApiTeamsTeamIdChannelsGetQueryKey = (teamId: string,) => {
+    return [
+    `/api/teams/${teamId}/channels`
+    ] as const;
+    }
+
+
+export const useListTeamChannelsApiTeamsTeamIdChannelsGetInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<ReturnType<typeof useListTeamChannelsApiTeamsTeamIdChannelsGetHook>>>>, TError = HTTPValidationError>(teamId: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<ReturnType<typeof useListTeamChannelsApiTeamsTeamIdChannelsGetHook>>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListTeamChannelsApiTeamsTeamIdChannelsGetInfiniteQueryKey(teamId);
+
+  const listTeamChannelsApiTeamsTeamIdChannelsGet =  useListTeamChannelsApiTeamsTeamIdChannelsGetHook();
+
+    const queryFn: QueryFunction<Awaited<ReturnType<ReturnType<typeof useListTeamChannelsApiTeamsTeamIdChannelsGetHook>>>> = ({ signal }) => listTeamChannelsApiTeamsTeamIdChannelsGet(teamId, signal);
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: !!(teamId), ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<ReturnType<typeof useListTeamChannelsApiTeamsTeamIdChannelsGetHook>>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type ListTeamChannelsApiTeamsTeamIdChannelsGetInfiniteQueryResult = NonNullable<Awaited<ReturnType<ReturnType<typeof useListTeamChannelsApiTeamsTeamIdChannelsGetHook>>>>
+export type ListTeamChannelsApiTeamsTeamIdChannelsGetInfiniteQueryError = HTTPValidationError
+
+
+export function useListTeamChannelsApiTeamsTeamIdChannelsGetInfinite<TData = InfiniteData<Awaited<ReturnType<ReturnType<typeof useListTeamChannelsApiTeamsTeamIdChannelsGetHook>>>>, TError = HTTPValidationError>(
+ teamId: string, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<ReturnType<typeof useListTeamChannelsApiTeamsTeamIdChannelsGetHook>>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<ReturnType<typeof useListTeamChannelsApiTeamsTeamIdChannelsGetHook>>>,
+          TError,
+          Awaited<ReturnType<ReturnType<typeof useListTeamChannelsApiTeamsTeamIdChannelsGetHook>>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useListTeamChannelsApiTeamsTeamIdChannelsGetInfinite<TData = InfiniteData<Awaited<ReturnType<ReturnType<typeof useListTeamChannelsApiTeamsTeamIdChannelsGetHook>>>>, TError = HTTPValidationError>(
+ teamId: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<ReturnType<typeof useListTeamChannelsApiTeamsTeamIdChannelsGetHook>>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<ReturnType<typeof useListTeamChannelsApiTeamsTeamIdChannelsGetHook>>>,
+          TError,
+          Awaited<ReturnType<ReturnType<typeof useListTeamChannelsApiTeamsTeamIdChannelsGetHook>>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useListTeamChannelsApiTeamsTeamIdChannelsGetInfinite<TData = InfiniteData<Awaited<ReturnType<ReturnType<typeof useListTeamChannelsApiTeamsTeamIdChannelsGetHook>>>>, TError = HTTPValidationError>(
+ teamId: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<ReturnType<typeof useListTeamChannelsApiTeamsTeamIdChannelsGetHook>>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary List Team Channels
+ */
+
+export function useListTeamChannelsApiTeamsTeamIdChannelsGetInfinite<TData = InfiniteData<Awaited<ReturnType<ReturnType<typeof useListTeamChannelsApiTeamsTeamIdChannelsGetHook>>>>, TError = HTTPValidationError>(
+ teamId: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<ReturnType<typeof useListTeamChannelsApiTeamsTeamIdChannelsGetHook>>>, TError, TData>>, }
+ , queryClient?: QueryClient
+ ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = useListTeamChannelsApiTeamsTeamIdChannelsGetInfiniteQueryOptions(teamId,options)
+
+  const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+export const useListTeamChannelsApiTeamsTeamIdChannelsGetQueryOptions = <TData = Awaited<ReturnType<ReturnType<typeof useListTeamChannelsApiTeamsTeamIdChannelsGetHook>>>, TError = HTTPValidationError>(teamId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<ReturnType<typeof useListTeamChannelsApiTeamsTeamIdChannelsGetHook>>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListTeamChannelsApiTeamsTeamIdChannelsGetQueryKey(teamId);
+
+  const listTeamChannelsApiTeamsTeamIdChannelsGet =  useListTeamChannelsApiTeamsTeamIdChannelsGetHook();
+
+    const queryFn: QueryFunction<Awaited<ReturnType<ReturnType<typeof useListTeamChannelsApiTeamsTeamIdChannelsGetHook>>>> = ({ signal }) => listTeamChannelsApiTeamsTeamIdChannelsGet(teamId, signal);
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: !!(teamId), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<ReturnType<typeof useListTeamChannelsApiTeamsTeamIdChannelsGetHook>>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type ListTeamChannelsApiTeamsTeamIdChannelsGetQueryResult = NonNullable<Awaited<ReturnType<ReturnType<typeof useListTeamChannelsApiTeamsTeamIdChannelsGetHook>>>>
+export type ListTeamChannelsApiTeamsTeamIdChannelsGetQueryError = HTTPValidationError
+
+
+export function useListTeamChannelsApiTeamsTeamIdChannelsGet<TData = Awaited<ReturnType<ReturnType<typeof useListTeamChannelsApiTeamsTeamIdChannelsGetHook>>>, TError = HTTPValidationError>(
+ teamId: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<ReturnType<typeof useListTeamChannelsApiTeamsTeamIdChannelsGetHook>>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<ReturnType<typeof useListTeamChannelsApiTeamsTeamIdChannelsGetHook>>>,
+          TError,
+          Awaited<ReturnType<ReturnType<typeof useListTeamChannelsApiTeamsTeamIdChannelsGetHook>>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useListTeamChannelsApiTeamsTeamIdChannelsGet<TData = Awaited<ReturnType<ReturnType<typeof useListTeamChannelsApiTeamsTeamIdChannelsGetHook>>>, TError = HTTPValidationError>(
+ teamId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<ReturnType<typeof useListTeamChannelsApiTeamsTeamIdChannelsGetHook>>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<ReturnType<typeof useListTeamChannelsApiTeamsTeamIdChannelsGetHook>>>,
+          TError,
+          Awaited<ReturnType<ReturnType<typeof useListTeamChannelsApiTeamsTeamIdChannelsGetHook>>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useListTeamChannelsApiTeamsTeamIdChannelsGet<TData = Awaited<ReturnType<ReturnType<typeof useListTeamChannelsApiTeamsTeamIdChannelsGetHook>>>, TError = HTTPValidationError>(
+ teamId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<ReturnType<typeof useListTeamChannelsApiTeamsTeamIdChannelsGetHook>>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary List Team Channels
+ */
+
+export function useListTeamChannelsApiTeamsTeamIdChannelsGet<TData = Awaited<ReturnType<ReturnType<typeof useListTeamChannelsApiTeamsTeamIdChannelsGetHook>>>, TError = HTTPValidationError>(
+ teamId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<ReturnType<typeof useListTeamChannelsApiTeamsTeamIdChannelsGetHook>>>, TError, TData>>, }
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = useListTeamChannelsApiTeamsTeamIdChannelsGetQueryOptions(teamId,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+export const useListTeamChannelsApiTeamsTeamIdChannelsGetSuspenseQueryOptions = <TData = Awaited<ReturnType<ReturnType<typeof useListTeamChannelsApiTeamsTeamIdChannelsGetHook>>>, TError = HTTPValidationError>(teamId: string, options?: { query?:Partial<UseSuspenseQueryOptions<Awaited<ReturnType<ReturnType<typeof useListTeamChannelsApiTeamsTeamIdChannelsGetHook>>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListTeamChannelsApiTeamsTeamIdChannelsGetQueryKey(teamId);
+
+  const listTeamChannelsApiTeamsTeamIdChannelsGet =  useListTeamChannelsApiTeamsTeamIdChannelsGetHook();
+
+    const queryFn: QueryFunction<Awaited<ReturnType<ReturnType<typeof useListTeamChannelsApiTeamsTeamIdChannelsGetHook>>>> = ({ signal }) => listTeamChannelsApiTeamsTeamIdChannelsGet(teamId, signal);
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseSuspenseQueryOptions<Awaited<ReturnType<ReturnType<typeof useListTeamChannelsApiTeamsTeamIdChannelsGetHook>>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type ListTeamChannelsApiTeamsTeamIdChannelsGetSuspenseQueryResult = NonNullable<Awaited<ReturnType<ReturnType<typeof useListTeamChannelsApiTeamsTeamIdChannelsGetHook>>>>
+export type ListTeamChannelsApiTeamsTeamIdChannelsGetSuspenseQueryError = HTTPValidationError
+
+
+export function useListTeamChannelsApiTeamsTeamIdChannelsGetSuspense<TData = Awaited<ReturnType<ReturnType<typeof useListTeamChannelsApiTeamsTeamIdChannelsGetHook>>>, TError = HTTPValidationError>(
+ teamId: string, options: { query:Partial<UseSuspenseQueryOptions<Awaited<ReturnType<ReturnType<typeof useListTeamChannelsApiTeamsTeamIdChannelsGetHook>>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useListTeamChannelsApiTeamsTeamIdChannelsGetSuspense<TData = Awaited<ReturnType<ReturnType<typeof useListTeamChannelsApiTeamsTeamIdChannelsGetHook>>>, TError = HTTPValidationError>(
+ teamId: string, options?: { query?:Partial<UseSuspenseQueryOptions<Awaited<ReturnType<ReturnType<typeof useListTeamChannelsApiTeamsTeamIdChannelsGetHook>>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useListTeamChannelsApiTeamsTeamIdChannelsGetSuspense<TData = Awaited<ReturnType<ReturnType<typeof useListTeamChannelsApiTeamsTeamIdChannelsGetHook>>>, TError = HTTPValidationError>(
+ teamId: string, options?: { query?:Partial<UseSuspenseQueryOptions<Awaited<ReturnType<ReturnType<typeof useListTeamChannelsApiTeamsTeamIdChannelsGetHook>>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary List Team Channels
+ */
+
+export function useListTeamChannelsApiTeamsTeamIdChannelsGetSuspense<TData = Awaited<ReturnType<ReturnType<typeof useListTeamChannelsApiTeamsTeamIdChannelsGetHook>>>, TError = HTTPValidationError>(
+ teamId: string, options?: { query?:Partial<UseSuspenseQueryOptions<Awaited<ReturnType<ReturnType<typeof useListTeamChannelsApiTeamsTeamIdChannelsGetHook>>>, TError, TData>>, }
+ , queryClient?: QueryClient
+ ):  UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = useListTeamChannelsApiTeamsTeamIdChannelsGetSuspenseQueryOptions(teamId,options)
+
+  const query = useSuspenseQuery(queryOptions, queryClient) as  UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+/**
  * @summary Create Package
  */
 export const useCreatePackageApiTeamsTeamIdPackagesPostHook = () => {

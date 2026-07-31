@@ -12,4 +12,5 @@ export interface InviteResponse {
   role: string;
   token: string;
   created_at: string;
+  added_immediately?: boolean;
 }

@@ -38,6 +38,7 @@ import {
 import type {
   DecisionResponse,
   HTTPValidationError,
+  ListChannelDecisionsApiChannelsChannelIdDecisionsGetParams,
   ListReviewItemsApiTeamsTeamIdReviewItemsGetParams,
   ListTeamDecisionsApiTeamsTeamIdDecisionsGetParams,
   ProposeResolutionRequest,
@@ -643,6 +644,241 @@ export function useListTeamDecisionsApiTeamsTeamIdDecisionsGetSuspense<TData = A
  ):  UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
   const queryOptions = useListTeamDecisionsApiTeamsTeamIdDecisionsGetSuspenseQueryOptions(teamId,params,options)
+
+  const query = useSuspenseQuery(queryOptions, queryClient) as  UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+/**
+ * @summary List Channel Decisions
+ */
+export const useListChannelDecisionsApiChannelsChannelIdDecisionsGetHook = () => {
+        const listChannelDecisionsApiChannelsChannelIdDecisionsGet = useCustomInstance<DecisionResponse[]>();
+
+        return useCallback((
+    channelId: string,
+    params?: ListChannelDecisionsApiChannelsChannelIdDecisionsGetParams,
+ signal?: AbortSignal
+) => {
+        return listChannelDecisionsApiChannelsChannelIdDecisionsGet(
+          {url: `/api/channels/${channelId}/decisions`, method: 'GET',
+        params, signal
+    },
+          );
+        }, [listChannelDecisionsApiChannelsChannelIdDecisionsGet])
+      }
+
+
+
+
+export const getListChannelDecisionsApiChannelsChannelIdDecisionsGetInfiniteQueryKey = (channelId: string,
+    params?: ListChannelDecisionsApiChannelsChannelIdDecisionsGetParams,) => {
+    return [
+    'infinite', `/api/channels/${channelId}/decisions`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+export const getListChannelDecisionsApiChannelsChannelIdDecisionsGetQueryKey = (channelId: string,
+    params?: ListChannelDecisionsApiChannelsChannelIdDecisionsGetParams,) => {
+    return [
+    `/api/channels/${channelId}/decisions`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const useListChannelDecisionsApiChannelsChannelIdDecisionsGetInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<ReturnType<typeof useListChannelDecisionsApiChannelsChannelIdDecisionsGetHook>>>>, TError = HTTPValidationError>(channelId: string,
+    params?: ListChannelDecisionsApiChannelsChannelIdDecisionsGetParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<ReturnType<typeof useListChannelDecisionsApiChannelsChannelIdDecisionsGetHook>>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListChannelDecisionsApiChannelsChannelIdDecisionsGetInfiniteQueryKey(channelId,params);
+
+  const listChannelDecisionsApiChannelsChannelIdDecisionsGet =  useListChannelDecisionsApiChannelsChannelIdDecisionsGetHook();
+
+    const queryFn: QueryFunction<Awaited<ReturnType<ReturnType<typeof useListChannelDecisionsApiChannelsChannelIdDecisionsGetHook>>>> = ({ signal }) => listChannelDecisionsApiChannelsChannelIdDecisionsGet(channelId,params, signal);
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: !!(channelId), ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<ReturnType<typeof useListChannelDecisionsApiChannelsChannelIdDecisionsGetHook>>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type ListChannelDecisionsApiChannelsChannelIdDecisionsGetInfiniteQueryResult = NonNullable<Awaited<ReturnType<ReturnType<typeof useListChannelDecisionsApiChannelsChannelIdDecisionsGetHook>>>>
+export type ListChannelDecisionsApiChannelsChannelIdDecisionsGetInfiniteQueryError = HTTPValidationError
+
+
+export function useListChannelDecisionsApiChannelsChannelIdDecisionsGetInfinite<TData = InfiniteData<Awaited<ReturnType<ReturnType<typeof useListChannelDecisionsApiChannelsChannelIdDecisionsGetHook>>>>, TError = HTTPValidationError>(
+ channelId: string,
+    params: undefined |  ListChannelDecisionsApiChannelsChannelIdDecisionsGetParams, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<ReturnType<typeof useListChannelDecisionsApiChannelsChannelIdDecisionsGetHook>>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<ReturnType<typeof useListChannelDecisionsApiChannelsChannelIdDecisionsGetHook>>>,
+          TError,
+          Awaited<ReturnType<ReturnType<typeof useListChannelDecisionsApiChannelsChannelIdDecisionsGetHook>>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useListChannelDecisionsApiChannelsChannelIdDecisionsGetInfinite<TData = InfiniteData<Awaited<ReturnType<ReturnType<typeof useListChannelDecisionsApiChannelsChannelIdDecisionsGetHook>>>>, TError = HTTPValidationError>(
+ channelId: string,
+    params?: ListChannelDecisionsApiChannelsChannelIdDecisionsGetParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<ReturnType<typeof useListChannelDecisionsApiChannelsChannelIdDecisionsGetHook>>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<ReturnType<typeof useListChannelDecisionsApiChannelsChannelIdDecisionsGetHook>>>,
+          TError,
+          Awaited<ReturnType<ReturnType<typeof useListChannelDecisionsApiChannelsChannelIdDecisionsGetHook>>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useListChannelDecisionsApiChannelsChannelIdDecisionsGetInfinite<TData = InfiniteData<Awaited<ReturnType<ReturnType<typeof useListChannelDecisionsApiChannelsChannelIdDecisionsGetHook>>>>, TError = HTTPValidationError>(
+ channelId: string,
+    params?: ListChannelDecisionsApiChannelsChannelIdDecisionsGetParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<ReturnType<typeof useListChannelDecisionsApiChannelsChannelIdDecisionsGetHook>>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary List Channel Decisions
+ */
+
+export function useListChannelDecisionsApiChannelsChannelIdDecisionsGetInfinite<TData = InfiniteData<Awaited<ReturnType<ReturnType<typeof useListChannelDecisionsApiChannelsChannelIdDecisionsGetHook>>>>, TError = HTTPValidationError>(
+ channelId: string,
+    params?: ListChannelDecisionsApiChannelsChannelIdDecisionsGetParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<ReturnType<typeof useListChannelDecisionsApiChannelsChannelIdDecisionsGetHook>>>, TError, TData>>, }
+ , queryClient?: QueryClient
+ ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = useListChannelDecisionsApiChannelsChannelIdDecisionsGetInfiniteQueryOptions(channelId,params,options)
+
+  const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+export const useListChannelDecisionsApiChannelsChannelIdDecisionsGetQueryOptions = <TData = Awaited<ReturnType<ReturnType<typeof useListChannelDecisionsApiChannelsChannelIdDecisionsGetHook>>>, TError = HTTPValidationError>(channelId: string,
+    params?: ListChannelDecisionsApiChannelsChannelIdDecisionsGetParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<ReturnType<typeof useListChannelDecisionsApiChannelsChannelIdDecisionsGetHook>>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListChannelDecisionsApiChannelsChannelIdDecisionsGetQueryKey(channelId,params);
+
+  const listChannelDecisionsApiChannelsChannelIdDecisionsGet =  useListChannelDecisionsApiChannelsChannelIdDecisionsGetHook();
+
+    const queryFn: QueryFunction<Awaited<ReturnType<ReturnType<typeof useListChannelDecisionsApiChannelsChannelIdDecisionsGetHook>>>> = ({ signal }) => listChannelDecisionsApiChannelsChannelIdDecisionsGet(channelId,params, signal);
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: !!(channelId), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<ReturnType<typeof useListChannelDecisionsApiChannelsChannelIdDecisionsGetHook>>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type ListChannelDecisionsApiChannelsChannelIdDecisionsGetQueryResult = NonNullable<Awaited<ReturnType<ReturnType<typeof useListChannelDecisionsApiChannelsChannelIdDecisionsGetHook>>>>
+export type ListChannelDecisionsApiChannelsChannelIdDecisionsGetQueryError = HTTPValidationError
+
+
+export function useListChannelDecisionsApiChannelsChannelIdDecisionsGet<TData = Awaited<ReturnType<ReturnType<typeof useListChannelDecisionsApiChannelsChannelIdDecisionsGetHook>>>, TError = HTTPValidationError>(
+ channelId: string,
+    params: undefined |  ListChannelDecisionsApiChannelsChannelIdDecisionsGetParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<ReturnType<typeof useListChannelDecisionsApiChannelsChannelIdDecisionsGetHook>>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<ReturnType<typeof useListChannelDecisionsApiChannelsChannelIdDecisionsGetHook>>>,
+          TError,
+          Awaited<ReturnType<ReturnType<typeof useListChannelDecisionsApiChannelsChannelIdDecisionsGetHook>>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useListChannelDecisionsApiChannelsChannelIdDecisionsGet<TData = Awaited<ReturnType<ReturnType<typeof useListChannelDecisionsApiChannelsChannelIdDecisionsGetHook>>>, TError = HTTPValidationError>(
+ channelId: string,
+    params?: ListChannelDecisionsApiChannelsChannelIdDecisionsGetParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<ReturnType<typeof useListChannelDecisionsApiChannelsChannelIdDecisionsGetHook>>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<ReturnType<typeof useListChannelDecisionsApiChannelsChannelIdDecisionsGetHook>>>,
+          TError,
+          Awaited<ReturnType<ReturnType<typeof useListChannelDecisionsApiChannelsChannelIdDecisionsGetHook>>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useListChannelDecisionsApiChannelsChannelIdDecisionsGet<TData = Awaited<ReturnType<ReturnType<typeof useListChannelDecisionsApiChannelsChannelIdDecisionsGetHook>>>, TError = HTTPValidationError>(
+ channelId: string,
+    params?: ListChannelDecisionsApiChannelsChannelIdDecisionsGetParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<ReturnType<typeof useListChannelDecisionsApiChannelsChannelIdDecisionsGetHook>>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary List Channel Decisions
+ */
+
+export function useListChannelDecisionsApiChannelsChannelIdDecisionsGet<TData = Awaited<ReturnType<ReturnType<typeof useListChannelDecisionsApiChannelsChannelIdDecisionsGetHook>>>, TError = HTTPValidationError>(
+ channelId: string,
+    params?: ListChannelDecisionsApiChannelsChannelIdDecisionsGetParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<ReturnType<typeof useListChannelDecisionsApiChannelsChannelIdDecisionsGetHook>>>, TError, TData>>, }
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = useListChannelDecisionsApiChannelsChannelIdDecisionsGetQueryOptions(channelId,params,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+export const useListChannelDecisionsApiChannelsChannelIdDecisionsGetSuspenseQueryOptions = <TData = Awaited<ReturnType<ReturnType<typeof useListChannelDecisionsApiChannelsChannelIdDecisionsGetHook>>>, TError = HTTPValidationError>(channelId: string,
+    params?: ListChannelDecisionsApiChannelsChannelIdDecisionsGetParams, options?: { query?:Partial<UseSuspenseQueryOptions<Awaited<ReturnType<ReturnType<typeof useListChannelDecisionsApiChannelsChannelIdDecisionsGetHook>>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListChannelDecisionsApiChannelsChannelIdDecisionsGetQueryKey(channelId,params);
+
+  const listChannelDecisionsApiChannelsChannelIdDecisionsGet =  useListChannelDecisionsApiChannelsChannelIdDecisionsGetHook();
+
+    const queryFn: QueryFunction<Awaited<ReturnType<ReturnType<typeof useListChannelDecisionsApiChannelsChannelIdDecisionsGetHook>>>> = ({ signal }) => listChannelDecisionsApiChannelsChannelIdDecisionsGet(channelId,params, signal);
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseSuspenseQueryOptions<Awaited<ReturnType<ReturnType<typeof useListChannelDecisionsApiChannelsChannelIdDecisionsGetHook>>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type ListChannelDecisionsApiChannelsChannelIdDecisionsGetSuspenseQueryResult = NonNullable<Awaited<ReturnType<ReturnType<typeof useListChannelDecisionsApiChannelsChannelIdDecisionsGetHook>>>>
+export type ListChannelDecisionsApiChannelsChannelIdDecisionsGetSuspenseQueryError = HTTPValidationError
+
+
+export function useListChannelDecisionsApiChannelsChannelIdDecisionsGetSuspense<TData = Awaited<ReturnType<ReturnType<typeof useListChannelDecisionsApiChannelsChannelIdDecisionsGetHook>>>, TError = HTTPValidationError>(
+ channelId: string,
+    params: undefined |  ListChannelDecisionsApiChannelsChannelIdDecisionsGetParams, options: { query:Partial<UseSuspenseQueryOptions<Awaited<ReturnType<ReturnType<typeof useListChannelDecisionsApiChannelsChannelIdDecisionsGetHook>>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useListChannelDecisionsApiChannelsChannelIdDecisionsGetSuspense<TData = Awaited<ReturnType<ReturnType<typeof useListChannelDecisionsApiChannelsChannelIdDecisionsGetHook>>>, TError = HTTPValidationError>(
+ channelId: string,
+    params?: ListChannelDecisionsApiChannelsChannelIdDecisionsGetParams, options?: { query?:Partial<UseSuspenseQueryOptions<Awaited<ReturnType<ReturnType<typeof useListChannelDecisionsApiChannelsChannelIdDecisionsGetHook>>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useListChannelDecisionsApiChannelsChannelIdDecisionsGetSuspense<TData = Awaited<ReturnType<ReturnType<typeof useListChannelDecisionsApiChannelsChannelIdDecisionsGetHook>>>, TError = HTTPValidationError>(
+ channelId: string,
+    params?: ListChannelDecisionsApiChannelsChannelIdDecisionsGetParams, options?: { query?:Partial<UseSuspenseQueryOptions<Awaited<ReturnType<ReturnType<typeof useListChannelDecisionsApiChannelsChannelIdDecisionsGetHook>>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary List Channel Decisions
+ */
+
+export function useListChannelDecisionsApiChannelsChannelIdDecisionsGetSuspense<TData = Awaited<ReturnType<ReturnType<typeof useListChannelDecisionsApiChannelsChannelIdDecisionsGetHook>>>, TError = HTTPValidationError>(
+ channelId: string,
+    params?: ListChannelDecisionsApiChannelsChannelIdDecisionsGetParams, options?: { query?:Partial<UseSuspenseQueryOptions<Awaited<ReturnType<ReturnType<typeof useListChannelDecisionsApiChannelsChannelIdDecisionsGetHook>>>, TError, TData>>, }
+ , queryClient?: QueryClient
+ ):  UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = useListChannelDecisionsApiChannelsChannelIdDecisionsGetSuspenseQueryOptions(channelId,params,options)
 
   const query = useSuspenseQuery(queryOptions, queryClient) as  UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
