@@ -5,6 +5,7 @@ from __future__ import annotations
 import asyncio
 import inspect
 import uuid
+from pathlib import Path
 from uuid import UUID
 
 from fastapi.testclient import TestClient
@@ -396,10 +397,12 @@ def test_c6_view_source_endpoint(client: TestClient) -> None:
     body = src.json()
     assert body["package_title"] == "Spec pack"
     assert any(d["id"] == str(doc_id) and d["filename"] == "spec.txt" for d in body["documents"])  # noqa: E501
-    ui = open(  # noqa: SIM115
-        "/Users/tinnapatplangsri/Code/mistral-atlassian-hack/apps/web/src/features/channels/components/channel-feed-panel.tsx",
-        encoding="utf-8",
-    ).read()
+    repo_root = Path(__file__).resolve().parents[3]
+    ui_path = (
+        repo_root
+        / "apps/web/src/features/channels/components/channel-feed-panel.tsx"
+    )
+    ui = ui_path.read_text(encoding="utf-8")
     assert "openSources" in ui
     assert "originating package/docs for post" not in ui
 
