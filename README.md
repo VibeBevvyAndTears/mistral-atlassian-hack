@@ -23,21 +23,34 @@ Make sure you have the required CLI tools installed:
 
 - **bun** (JS/TS package manager):
 
-  ```bash
-  brew install bun  # or: curl -fsSL https://bun.sh/install | bash
-  ```
-
+  - **macOS / Linux**:
+    ```bash
+    brew install bun  # or: curl -fsSL https://bun.sh/install | bash
+    ```
+  - **Windows**:
+    ```powershell
+    powershell -c "irm bun.sh/install.ps1 | iex"
+    ```
 - **uv** (Python package manager):
 
-  ```bash
-  brew install uv   # or: curl -LsSf https://astral.sh/uv/install.sh | sh
-  ```
-
+  - **macOS / Linux**:
+    ```bash
+    brew install uv   # or: curl -LsSf https://astral.sh/uv/install.sh | sh
+    ```
+  - **Windows**:
+    ```powershell
+    powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+    ```
 - **mise** (Task runner):
 
-  ```bash
-  brew install mise # or: curl https://mise.jdx.dev/install.sh | sh
-  ```
+  - **macOS / Linux**:
+    ```bash
+    brew install mise # or: curl https://mise.jdx.dev/install.sh | sh
+    ```
+  - **Windows**:
+    ```powershell
+    winget install jdx.mise # or: scoop install mise
+    ```
 
 ### 2. Install Dependencies
 
@@ -57,9 +70,14 @@ Run from the project root:
 
 #### **API Environment (`apps/api/.env`)**
 
-```bash
-cp apps/api/.env.example apps/api/.env
-```
+- **macOS / Linux**:
+  ```bash
+  cp apps/api/.env.example apps/api/.env
+  ```
+- **Windows (PowerShell)**:
+  ```powershell
+  Copy-Item apps/api/.env.example apps/api/.env
+  ```
 
 Fill in the required keys in `apps/api/.env`:
 
@@ -71,15 +89,25 @@ Fill in the required keys in `apps/api/.env`:
 
 #### **Web Environment (`apps/web/.env`)**
 
-```bash
-cp apps/web/.env.example apps/web/.env
-```
+- **macOS / Linux**:
+  ```bash
+  cp apps/web/.env.example apps/web/.env
+  ```
+- **Windows (PowerShell)**:
+  ```powershell
+  Copy-Item apps/web/.env.example apps/web/.env
+  ```
 
 Make sure `BETTER_AUTH_SECRET` is set in `apps/web/.env`. You can generate one with:
 
-```bash
-openssl rand -base64 32
-```
+- **macOS / Linux**:
+  ```bash
+  openssl rand -base64 32
+  ```
+- **Windows**:
+  ```powershell
+  powershell -Command "[guid]::NewGuid().ToString()"
+  ```
 
 ### 4. Run Database Migrations
 
