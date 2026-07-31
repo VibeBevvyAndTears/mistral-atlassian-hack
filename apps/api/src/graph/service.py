@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import difflib
 import json
+import re
 import uuid
 from typing import Any
 from uuid import UUID
@@ -29,6 +30,28 @@ from src.pipeline.contracts.linking import LinkingOutput
 from src.pipeline.trace import AgentTrace
 
 LINK_CONFIDENCE_THRESHOLD = 0.7
+_TMP_ID_NUM = re.compile(r"^(?:tmp_|node_|n)?(\d+)$", re.IGNORECASE)
+
+
+def resolve_tmp_node_id(
+    tmp_to_node: dict[str, UUID], node_tmp_id: str
+) -> UUID | None:
+    """Map claim/link tmp ids onto decomposition node ids.
+
+    LLMs often emit ``tmp_1`` while decomposition used ``node_1`` (or ``n1``).
+    Fall back to the first known node so claims are not silently dropped.
+    """
+    if node_tmp_id in tmp_to_node:
+        return tmp_to_node[node_tmp_id]
+    match = _TMP_ID_NUM.match(node_tmp_id.strip())
+    if match:
+        n = match.group(1)
+        for key in (f"node_{n}", f"tmp_{n}", f"n{n}", n):
+            if key in tmp_to_node:
+                return tmp_to_node[key]
+    if tmp_to_node:
+        return next(iter(tmp_to_node.values()))
+    return None
 
 
 def _trace_output(trace: AgentTrace) -> dict[str, Any]:
@@ -163,7 +186,7 @@ async def apply_claims(
     )
     created: list[Claim] = []
     for extracted in out.claims:
-        node_id = tmp_to_node.get(extracted.node_tmp_id)
+        node_id = resolve_tmp_node_id(tmp_to_node, extracted.node_tmp_id)
         if node_id is None:
             continue
         claim = Claim(
@@ -241,7 +264,7 @@ async def apply_linking(
         document_id=document_id,
     )
     for link in out.links:
-        new_id = tmp_to_node.get(link.new_node_tmp_id)
+        new_id = resolve_tmp_node_id(tmp_to_node, link.new_node_tmp_id)
         if new_id is None:
             continue
         existing: UUID | None = None

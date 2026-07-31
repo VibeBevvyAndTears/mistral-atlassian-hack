@@ -322,12 +322,12 @@ async def handle_ingest_document(job: Job, session: AsyncSession) -> None:
             ConflictOutput,
         )
 
+        # Include prior team claims so a new document can conflict with existing ones.
         claims = (
             await session.execute(
                 select(Claim).where(
                     Claim.org_id == org_id,
                     Claim.team_id == team_id,
-                    Claim.document_id == document_id,
                 )
             )
         ).scalars().all()
