@@ -319,6 +319,162 @@ def test_c5_paste_document(client: TestClient) -> None:
     assert body["job_id"]
 
 
+def test_composer_package_stores_tags_and_docs(client: TestClient) -> None:
+    from src.channels.models import Package
+    from src.lib.database import async_session_factory
+    from src.tenancy.models import SourceDocument
+
+    t = _two_teams(client)
+    doc_id = uuid.uuid4()
+
+    async def _seed_doc() -> None:
+        async with async_session_factory() as session:
+            session.add(
+                SourceDocument(
+                    id=doc_id,
+                    org_id=UUID(t["org"]),
+                    team_id=UUID(t["team_a"]),
+                    filename="note.txt",
+                    storage_uri="local://documents/note.txt",
+                    content_type="text/plain",
+                    status="ready",
+                    uploaded_by=UUID(t["user_id"]),
+                )
+            )
+            await session.commit()
+
+    asyncio.run(_seed_doc())
+
+    pkg = client.post(
+        f"/api/teams/{t['team_a']}/packages",
+        json={
+            "title": "Channel post",
+            "body": "Hello receivers",
+            "target_team_id": t["team_b"],
+            "bypass_incomplete_pipeline": True,
+            "topic_tags": ["Announcement"],
+            "attached_document_ids": [str(doc_id)],
+        },
+        headers=_auth(t["token"], t["org"], t["team_a"]),
+    )
+    assert pkg.status_code == 201, pkg.text
+    package_id = pkg.json()["id"]
+
+    async def _check() -> None:
+        async with async_session_factory() as session:
+            row = await session.get(Package, UUID(package_id))
+            assert row is not None
+            checklist = row.checklist or {}
+            assert checklist.get("composer_tags") == ["Announcement"]
+            assert checklist.get("composer_document_ids") == [str(doc_id)]
+
+    asyncio.run(_check())
+
+
+def test_composer_tags_flow_onto_channel_post(client: TestClient) -> None:
+    """Regression: Announcement/Update tags from the composer must land on the post."""
+    from src.channels import service as channels_service
+    from src.channels.models import Package, Post
+    from src.graph.models import Node
+    from src.lib.database import async_session_factory
+
+    t = _two_teams(client)
+    node_id = uuid.uuid4()
+
+    async def _seed_node() -> None:
+        async with async_session_factory() as session:
+            session.add(
+                Node(
+                    id=node_id,
+                    org_id=UUID(t["org"]),
+                    team_id=UUID(t["team_a"]),
+                    label="Ship date",
+                    node_type="topic",
+                    summary="Friday",
+                    version=1,
+                    search_text="Ship date Friday",
+                    document_id=uuid.uuid4(),
+                )
+            )
+            await session.commit()
+
+    asyncio.run(_seed_node())
+
+    pkg = client.post(
+        f"/api/teams/{t['team_a']}/packages",
+        json={
+            "title": "Typed handoff",
+            "body": "Monday it is.",
+            "target_team_id": t["team_b"],
+            "bypass_incomplete_pipeline": True,
+            "topic_tags": ["Announcement"],
+            "included_node_ids": [str(node_id)],
+        },
+        headers=_auth(t["token"], t["org"], t["team_a"]),
+    )
+    assert pkg.status_code == 201, pkg.text
+    package_id = pkg.json()["id"]
+    channel_id = pkg.json()["channel_id"]
+    assert channel_id
+
+    async def _create_like_send_job() -> str:
+        async with async_session_factory() as session:
+            package = await session.get(Package, UUID(package_id))
+            assert package is not None
+            await session.refresh(package)
+            topic_tags: list[str] = []
+            for raw in (package.checklist or {}).get("composer_tags") or []:
+                label = str(raw).strip()
+                if label and label not in topic_tags:
+                    topic_tags.append(label)
+            for raw in package.included_node_ids or []:
+                node = await session.get(Node, UUID(str(raw)))
+                if node is not None and node.label:
+                    label = str(node.label)
+                    if label not in topic_tags:
+                        topic_tags.append(label)
+            assert topic_tags[0] == "Announcement"
+            post = await channels_service.create_post_with_rendition(
+                session,
+                org_id=UUID(t["org"]),
+                channel_id=UUID(channel_id),
+                package_id=UUID(package_id),
+                original_body="o",
+                adapted_body="a",
+                what_was_done="adapted",
+                priority="p2",
+                priority_reason="typed",
+                bypassed_checks=[],
+                fidelity=None,
+                fit=None,
+                confidence=None,
+                badge=None,
+                judge_payload={},
+                topic_tags=topic_tags,
+                attached_conflicts=[],
+            )
+            await session.commit()
+            return str(post.id)
+
+    post_id = asyncio.run(_create_like_send_job())
+    got = client.get(
+        f"/api/posts/{post_id}",
+        headers=_auth(t["token"], t["org"], t["team_b"]),
+    )
+    assert got.status_code == 200, got.text
+    tags = got.json()["topic_tags"]
+    assert tags[0] == "Announcement"
+    assert "Ship date" in tags
+
+    async def _stored() -> None:
+        async with async_session_factory() as session:
+            row = await session.get(Post, UUID(post_id))
+            assert row is not None
+            assert (row.topic_tags or [])[0] == "Announcement"
+
+    asyncio.run(_stored())
+
+
 def test_c6_view_source_endpoint(client: TestClient) -> None:
     from src.channels.models import Post
     from src.graph.models import Node
@@ -389,6 +545,11 @@ def test_c6_view_source_endpoint(client: TestClient) -> None:
             await session.commit()
 
     asyncio.run(_seed())
+    # Write blob so Team B can preview/download
+    blob = Path.cwd() / ".data" / "storage" / "documents" / "spec.txt"
+    blob.parent.mkdir(parents=True, exist_ok=True)
+    blob.write_text("source body for team B\n", encoding="utf-8")
+
     src = client.get(
         f"/api/posts/{post_id}/sources",
         headers=_auth(t["token"], t["org"], t["team_b"]),
@@ -397,6 +558,15 @@ def test_c6_view_source_endpoint(client: TestClient) -> None:
     body = src.json()
     assert body["package_title"] == "Spec pack"
     assert any(d["id"] == str(doc_id) and d["filename"] == "spec.txt" for d in body["documents"])  # noqa: E501
+    content = client.get(
+        f"/api/posts/{post_id}/sources/{doc_id}/content",
+        headers=_auth(t["token"], t["org"], t["team_b"]),
+        params={"disposition": "attachment"},
+    )
+    assert content.status_code == 200, content.text
+    assert content.content == b"source body for team B\n"
+    assert "spec.txt" in content.headers.get("content-disposition", "")
+
     repo_root = Path(__file__).resolve().parents[3]
     ui_path = (
         repo_root
@@ -406,8 +576,15 @@ def test_c6_view_source_endpoint(client: TestClient) -> None:
     assert "openSources" in ui
     assert "View source" in ui
     assert "History" in ui
-    assert "Topics from sender nodes" in ui
+    assert "ChannelPostSourceModal" in ui
+    assert "topic_tags" in ui
     assert "originating package/docs for post" not in ui
+    modal = (
+        repo_root
+        / "apps/web/src/features/channels/components/channel-post-source-modal.tsx"
+    ).read_text(encoding="utf-8")
+    assert "Download" in modal
+    assert "disposition" in modal
 
 
 def test_c7_post_updated_notification(client: TestClient) -> None:

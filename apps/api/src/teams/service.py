@@ -283,6 +283,32 @@ async def remove_member(
     await revoke_user_tokens(str(target_user_id))
 
 
+async def list_org_teams(
+    db: AsyncSession,
+    *,
+    org_id: UUID,
+    user_id: UUID,
+    mine_only: bool = False,
+) -> list[TeamResponse]:
+    """List teams in an org. When mine_only, restrict to the caller's memberships."""
+    stmt = select(Team).where(Team.org_id == org_id, Team.archived_at.is_(None))
+    if mine_only:
+        stmt = stmt.join(TeamMember, TeamMember.team_id == Team.id).where(
+            TeamMember.user_id == user_id
+        )
+    stmt = stmt.order_by(Team.name.asc())
+    rows = (await db.execute(stmt)).scalars().all()
+    return [
+        TeamResponse(
+            id=str(team.id),
+            org_id=str(team.org_id),
+            name=team.name,
+            created_at=team.created_at,
+        )
+        for team in rows
+    ]
+
+
 async def list_members(
     db: AsyncSession,
     *,

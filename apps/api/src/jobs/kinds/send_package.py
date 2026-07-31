@@ -315,7 +315,14 @@ async def handle_send_package(job: Job, session: AsyncSession) -> None:
             raise RuntimeError("package missing channel")
         from src.graph.models import Node
 
+        # Keep checklist (composer_tags, attached_conflicts) fresh before tagging.
+        await session.refresh(pkg)
+
         topic_tags: list[str] = []
+        for raw in (pkg.checklist or {}).get("composer_tags") or []:
+            label = str(raw).strip()
+            if label and label not in topic_tags:
+                topic_tags.append(label)
         for raw in pkg.included_node_ids or []:
             try:
                 nid = UUID(str(raw))
@@ -323,7 +330,9 @@ async def handle_send_package(job: Job, session: AsyncSession) -> None:
                 continue
             node = await session.get(Node, nid)
             if node is not None and node.label:
-                topic_tags.append(str(node.label))
+                label = str(node.label)
+                if label not in topic_tags:
+                    topic_tags.append(label)
         attached = [
             dict(c)
             for c in (pkg.checklist or {}).get("attached_conflicts") or []

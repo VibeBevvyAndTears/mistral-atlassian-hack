@@ -201,6 +201,8 @@ class PackageCreate(BaseModel):
     target_team_id: str
     bypass_incomplete_pipeline: bool = False
     included_node_ids: list[str] = Field(default_factory=list)
+    topic_tags: list[str] = Field(default_factory=list)
+    attached_document_ids: list[str] = Field(default_factory=list)
 
 
 class PackageSendBody(BaseModel):
@@ -278,6 +280,7 @@ class PostSourceDocument(BaseModel):
     id: str
     filename: str
     status: str
+    content_type: str | None = None
 
 
 class PostSourcesResponse(BaseModel):

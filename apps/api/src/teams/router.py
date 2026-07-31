@@ -53,6 +53,21 @@ async def archive_team(
     )
 
 
+@router.get("/orgs/{org_id}/teams", response_model=list[TeamResponse])
+async def list_org_teams(
+    org_id: UUID,
+    scope: TenantScopeDep,
+    db: DBSession,
+    mine_only: bool = False,
+) -> list[TeamResponse]:
+    """List all org teams, or only teams the caller belongs to when mine_only=true."""
+    if scope.org_id != org_id:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Organization not found")  # noqa: E501
+    return await teams_service.list_org_teams(
+        db, org_id=org_id, user_id=scope.user_id, mine_only=mine_only
+    )
+
+
 @router.post(
     "/teams/{team_id}/invites",
     response_model=InviteResponse,

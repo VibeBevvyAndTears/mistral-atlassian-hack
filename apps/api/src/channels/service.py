@@ -259,6 +259,8 @@ async def create_package(
     target_team_id: UUID,
     bypass_incomplete: bool = False,
     included_node_ids: list[UUID] | None = None,
+    topic_tags: list[str] | None = None,
+    attached_document_ids: list[UUID] | None = None,
 ) -> PackageResponse:
     target = await db.get(Team, target_team_id)
     if target is None or target.org_id != org_id:
@@ -283,6 +285,12 @@ async def create_package(
         package_body=body,
         included_node_ids=node_ids,
     )
+    composer_tags = [t.strip() for t in (topic_tags or []) if t and t.strip()]
+    composer_docs = [str(d) for d in (attached_document_ids or [])]
+    if composer_tags:
+        checklist = {**checklist, "composer_tags": composer_tags}
+    if composer_docs:
+        checklist = {**checklist, "composer_document_ids": composer_docs}
     pkg = Package(
         id=uuid.uuid4(),
         org_id=org_id,
@@ -829,6 +837,12 @@ async def list_post_sources(
         if node is not None and node.document_id is not None:
             doc_ids.add(node.document_id)
 
+    for raw in (pkg.checklist or {}).get("composer_document_ids") or []:
+        try:
+            doc_ids.add(UUID(str(raw)))
+        except ValueError:
+            continue
+
     documents: list[PostSourceDocument] = []
     for did in sorted(doc_ids, key=str):
         doc = await db.get(SourceDocument, did)
@@ -839,6 +853,7 @@ async def list_post_sources(
                 id=str(doc.id),
                 filename=doc.filename,
                 status=doc.status,
+                content_type=doc.content_type,
             )
         )
     return PostSourcesResponse(
@@ -846,6 +861,64 @@ async def list_post_sources(
         package_title=pkg.title,
         documents=documents,
     )
+
+
+def _parse_storage_uri(storage_uri: str) -> tuple[str, str]:
+    """Return (bucket, key) from a local:// or Azure blob URL."""
+    from urllib.parse import unquote, urlparse
+
+    if storage_uri.startswith("local://"):
+        rest = storage_uri.removeprefix("local://")
+        bucket, _, key = rest.partition("/")
+        if not bucket or not key:
+            raise ValueError("invalid local storage uri")
+        return bucket, key
+
+    parsed = urlparse(storage_uri)
+    path = unquote(parsed.path.lstrip("/"))
+    bucket, _, key = path.partition("/")
+    if not bucket or not key:
+        raise ValueError("invalid blob storage uri")
+    return bucket, key
+
+
+async def read_post_source_bytes(
+    db: AsyncSession,
+    *,
+    org_id: UUID,
+    post_id: UUID,
+    team_id: UUID,
+    document_id: UUID,
+) -> tuple[bytes, str, str | None]:
+    """Load source file bytes for a post-linked document (channel peers only)."""
+    sources = await list_post_sources(
+        db, org_id=org_id, post_id=post_id, team_id=team_id
+    )
+    match = next((d for d in sources.documents if d.id == str(document_id)), None)
+    if match is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Source document not found"
+        )
+
+    from src.lib.storage.factory import get_storage_provider
+    from src.tenancy.models import SourceDocument
+
+    doc = await db.get(SourceDocument, document_id)
+    if doc is None or doc.org_id != org_id or not doc.storage_uri:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Source document not found"
+        )
+
+    try:
+        bucket, key = _parse_storage_uri(doc.storage_uri)
+        data = await get_storage_provider().download(bucket, key)
+    except (ValueError, FileNotFoundError) as exc:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Source file unavailable",
+        ) from exc
+
+    return data, doc.filename, doc.content_type
 
 
 async def _post_response(

@@ -451,6 +451,7 @@ def main() -> int:
             ),
             "target_team_id": team_b_id,
             "bypass_incomplete_pipeline": True,
+            "topic_tags": ["Announcement"],
         }
         if included_node_ids:
             pkg_body["included_node_ids"] = included_node_ids

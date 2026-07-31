@@ -6,6 +6,7 @@ from typing import Literal
 from uuid import UUID
 
 from fastapi import APIRouter, HTTPException, Query, status
+from fastapi.responses import Response
 from pydantic import BaseModel, Field
 
 from src.channels import service as channels_service
@@ -93,6 +94,8 @@ async def create_package(
         target_team_id=UUID(body.target_team_id),
         bypass_incomplete=body.bypass_incomplete_pipeline,
         included_node_ids=[UUID(x) for x in body.included_node_ids],
+        topic_tags=list(body.topic_tags),
+        attached_document_ids=[UUID(x) for x in body.attached_document_ids],
     )
 
 
@@ -214,6 +217,38 @@ async def list_post_sources(
         org_id=scope.org_id,
         post_id=post_id,
         team_id=scope.team_id,
+    )
+
+
+@router.get("/posts/{post_id}/sources/{document_id}/content")
+async def download_post_source(
+    post_id: UUID,
+    document_id: UUID,
+    scope: TenantScopeDep,
+    db: DBSession,
+    disposition: Literal["inline", "attachment"] = "inline",
+) -> Response:
+    """Preview or download a source document linked to a channel post."""
+    if scope.team_id is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Post not found"
+        )
+    data, filename, content_type = await channels_service.read_post_source_bytes(
+        db,
+        org_id=scope.org_id,
+        post_id=post_id,
+        team_id=scope.team_id,
+        document_id=document_id,
+    )
+    media = content_type or "application/octet-stream"
+    safe_name = filename.replace('"', "")
+    return Response(
+        content=data,
+        media_type=media,
+        headers={
+            "Content-Disposition": f'{disposition}; filename="{safe_name}"',
+            "Cache-Control": "private, max-age=60",
+        },
     )
 
 
