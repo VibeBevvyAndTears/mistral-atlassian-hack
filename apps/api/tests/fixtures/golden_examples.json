@@ -1,0 +1,42 @@
+[
+  {
+    "kind": "conflict",
+    "input_json": {
+      "text_a": "Launch Friday",
+      "text_b": "Launch Monday",
+      "actual": {
+        "is_conflict": true
+      }
+    },
+    "expected_json": {
+      "is_conflict": true
+    },
+    "notes": "Detect contradictory launch dates"
+  },
+  {
+    "kind": "judge",
+    "input_json": {
+      "candidate": "Escalate to both team leads",
+      "actual": {
+        "verdict": "approve"
+      }
+    },
+    "expected_json": {
+      "verdict": "approve"
+    },
+    "notes": "Human-approved escalation"
+  },
+  {
+    "kind": "fidelity",
+    "input_json": {
+      "source": "Ship after legal approval",
+      "actual": {
+        "meaning_preserved": true
+      }
+    },
+    "expected_json": {
+      "meaning_preserved": true
+    },
+    "notes": "Adaptation preserves the gating condition"
+  }
+]

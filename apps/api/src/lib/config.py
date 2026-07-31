@@ -16,6 +16,9 @@ class Settings(BaseSettings):
 
     # Project
     PROJECT_NAME: str = "fullstack-starter-api"
+    # Product display name — single source for branding (T2-O / S14). Prefer this
+    # over hardcoding "Cross-Team" in routes, fixtures, or seed data.
+    PRODUCT_NAME: str = "Cross-Team"
     PROJECT_ENV: Literal["local", "staging", "prod"] = "local"
 
     # Database
@@ -53,8 +56,13 @@ class Settings(BaseSettings):
         "off", "span_only", "event_only", "span_and_event"
     ] = "off"
 
-    # AI (optional)
-    AI_PROVIDER: Literal["gemini", "openai"] = "gemini"
+    # AI — Cross-Team uses Mistral only (PRD §12.1 / design 001).
+    AI_PROVIDER: Literal["mistral", "gemini", "openai"] = "mistral"
+    MISTRAL_API_KEY: str | None = None
+    MISTRAL_CHAT_MODEL: str = "mistral-large-latest"
+    MISTRAL_EMBED_MODEL: str = "mistral-embed"
+    MISTRAL_OCR_MODEL: str = "mistral-ocr-latest"
+    MISTRAL_KILL_SWITCH: bool = False
     GOOGLE_CLOUD_PROJECT: str | None = None
     GEMINI_API_KEY: str | None = None
     OPENAI_API_KEY: str | None = None

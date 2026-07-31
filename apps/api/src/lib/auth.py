@@ -60,6 +60,7 @@ class RegisterRequest(BaseModel):
 
     email: str
     password: str
+    username: str
     name: str | None = None
 
 
@@ -92,6 +93,24 @@ class CurrentUserInfo(BaseModel):
 def normalize_email(email: str) -> str:
     """Normalize email for storage and lookup."""
     return email.strip().lower()
+
+
+def normalize_username(username: str) -> str:
+    """Normalize username for storage and lookup."""
+    return username.strip().lower()
+
+
+def validate_username(username: str) -> str:
+    """Validate and normalize a public username handle."""
+    import re
+
+    normalized = normalize_username(username)
+    if not re.fullmatch(r"[a-z0-9_]{3,32}", normalized):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Username must be 3-32 chars: lowercase letters, digits, underscore",
+        )
+    return normalized
 
 
 def validate_password_strength(password: str) -> None:
@@ -331,12 +350,19 @@ async def get_current_user(request: Request) -> CurrentUserInfo:
             headers={"WWW-Authenticate": "Bearer"},
         )
 
-    from src.lib.token_store import is_revoked
+    from src.lib.token_store import is_revoked, is_user_revoked
 
     if await is_revoked(payload.jti):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Token has been revoked",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+    if await is_user_revoked(payload.user_id, payload.iat):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="team_membership_revoked",
             headers={"WWW-Authenticate": "Bearer"},
         )
 

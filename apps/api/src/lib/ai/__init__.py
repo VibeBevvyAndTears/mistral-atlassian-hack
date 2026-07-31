@@ -1,6 +1,7 @@
 """AI provider abstraction and OTel GenAI instrumentation helpers."""
 
 from src.lib.ai.base import AIProvider
+from src.lib.ai.fakes import FakeAIProvider
 from src.lib.ai.telemetry import (
     GenAIAttr,
     GenAIOperation,
@@ -14,6 +15,7 @@ from src.lib.ai.telemetry import (
 
 __all__ = [
     "AIProvider",
+    "FakeAIProvider",
     "GenAIAttr",
     "GenAIOperation",
     "GenAIProvider",

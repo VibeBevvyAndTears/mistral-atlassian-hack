@@ -14,6 +14,7 @@ from src.lib.auth import (
     decode_token,
     hash_password,
     normalize_email,
+    validate_username,
     verify_oauth_token,
     verify_password,
     verify_session_token,
@@ -34,6 +35,18 @@ async def _get_user_by_email(db: DBSession, email: str) -> User | None:
     return result.scalar_one_or_none()
 
 
+async def _get_user_by_username(db: DBSession, username: str) -> User | None:
+    """Load a user by normalized username."""
+    from sqlalchemy import select
+
+    from src.lib.auth import normalize_username
+
+    result = await db.execute(
+        select(User).where(User.username == normalize_username(username))
+    )
+    return result.scalar_one_or_none()
+
+
 async def _create_user(
     db: DBSession,
     email: str,
@@ -41,10 +54,12 @@ async def _create_user(
     image: str | None = None,
     email_verified: bool = False,
     password_hash: str | None = None,
+    username: str | None = None,
 ) -> User:
     """Create and hydrate a user."""
     user = User(
         email=normalize_email(email),
+        username=username,
         name=name,
         image=image,
         email_verified=email_verified,
@@ -80,18 +95,26 @@ async def register(
     body: RegisterRequest,
     db: DBSession,
 ) -> TokenResponse:
-    """Register with email/password and issue backend tokens."""
+    """Register with email/password/username and issue backend tokens."""
+    username = validate_username(body.username)
     existing_user = await _get_user_by_email(db, body.email)
     if existing_user:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail="Email already registered",
         )
+    existing_username = await _get_user_by_username(db, username)
+    if existing_username:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Username already taken",
+        )
 
     user = await _create_user(
         db,
         email=body.email,
-        name=body.name,
+        username=username,
+        name=body.name or username,
         email_verified=False,
         password_hash=hash_password(body.password),
     )
@@ -188,6 +211,20 @@ async def refresh_token(
             headers={"WWW-Authenticate": "Bearer"},
         )
 
+    # User-level revocation (team removal / role downgrade) must block refresh too.
+    # Checking iat=0 treats any active revoke epoch as blocking the whole token family,
+    # so a held refresh cannot mint post-epoch access tokens (T1-F).
+    from src.lib.token_store import is_user_revoked
+
+    if await is_user_revoked(payload.user_id, 0) or await is_user_revoked(
+        payload.user_id, payload.iat
+    ):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="team_membership_revoked",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
     from sqlalchemy import select
 
     result = await db.execute(select(User).where(User.id == UUID(payload.user_id)))
@@ -262,6 +299,7 @@ async def get_me(
     return UserResponse(
         id=str(user.id),
         email=user.email,
+        username=user.username,
         name=user.name,
         image=user.image,
         email_verified=user.email_verified,

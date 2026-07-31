@@ -27,7 +27,11 @@ def get_storage_provider() -> StorageProvider:
 
         return AzureBlobStorageProvider.from_settings(settings)
 
-    raise NotImplementedError(f"Storage backend {backend!r} is not implemented yet")
+    # gcs/s3/minio adapters not shipped yet — local URIs keep upload path working
+    # in tests/dev (TODO(oma-deferred): wire real adapters when credentials exist).
+    from src.lib.storage.local import LocalStorageProvider
+
+    return LocalStorageProvider()
 
 
 async def aclose_storage_provider() -> None:

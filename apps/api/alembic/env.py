@@ -5,8 +5,10 @@ from sqlalchemy import pool
 from sqlalchemy.engine import Connection
 
 from alembic import context
+from src.jobs import queue as jobs_queue  # noqa: F401
 from src.lib.config import settings
 from src.lib.database import Base
+from src.tenancy import models as tenancy_models  # noqa: F401
 from src.users import model as users_model  # noqa: F401
 
 config = context.config

@@ -46,6 +46,7 @@ def test_register_returns_backend_tokens(client: TestClient) -> None:
         json={
             "email": "grace@example.com",
             "password": "supersecret123",
+            "username": "grace",
             "name": "Grace",
         },
     )
@@ -64,6 +65,7 @@ def test_email_login_and_me_flow(client: TestClient) -> None:
         json={
             "email": "grace@example.com",
             "password": "supersecret123",
+            "username": "grace",
             "name": "Grace",
         },
     )
@@ -94,6 +96,7 @@ def test_duplicate_email_registration_is_rejected(client: TestClient) -> None:
     payload = {
         "email": "grace@example.com",
         "password": "supersecret123",
+        "username": "grace",
         "name": "Grace",
     }
 
@@ -121,6 +124,7 @@ def test_rate_limit_rejects_sixth_attempt(client: TestClient) -> None:
             json={
                 "email": f"rl-sixth-{i}@example.com",
                 "password": "supersecret123",
+                "username": f"rl_sixth_{i}",
             },
         )
         # All five must succeed (201 for new email, 409 for duplicate — both are
@@ -129,7 +133,11 @@ def test_rate_limit_rejects_sixth_attempt(client: TestClient) -> None:
 
     sixth = client.post(
         "/api/auth/register",
-        json={"email": "rl-sixth-5@example.com", "password": "supersecret123"},
+        json={
+            "email": "rl-sixth-5@example.com",
+            "password": "supersecret123",
+            "username": "rl_sixth_5",
+        },
     )
     assert sixth.status_code == 429
 
@@ -142,7 +150,11 @@ def test_rate_limit_rejects_sixth_login_attempt(client: TestClient) -> None:
     # succeed or fail with 401, but the rate-limit counter still increments.
     client.post(
         "/api/auth/register",
-        json={"email": "rl-login@example.com", "password": "supersecret123"},
+        json={
+            "email": "rl-login@example.com",
+            "password": "supersecret123",
+            "username": "rl_login",
+        },
     )
     # Reset after register so the login counter starts clean.
     _reset_rate_limiter()
@@ -167,9 +179,10 @@ def _register_and_get_tokens(client: TestClient, email: str) -> dict[str, str]:
     Resets both singletons so each test starts with a clean slate.
     """
     _reset_all()
+    local = "".join(c if c.isalnum() or c == "_" else "_" for c in email.split("@")[0].lower())[:32]  # noqa: E501
     resp = client.post(
         "/api/auth/register",
-        json={"email": email, "password": "supersecret123"},
+        json={"email": email, "password": "supersecret123", "username": local or "user"},  # noqa: E501
     )
     assert resp.status_code == 201
     return resp.json()
@@ -323,3 +336,44 @@ def test_concurrent_refresh_replay_exactly_one_succeeds(client: TestClient) -> N
 
     assert successes == 1, f"Expected exactly 1 success, got {successes}: {results}"
     assert failures == 1, f"Expected exactly 1 failure, got {failures}: {results}"
+
+
+# ---------------------------------------------------------------------------
+# T1-F: revoke_user_tokens must block refresh (no mint of post-epoch access)
+# ---------------------------------------------------------------------------
+
+
+def test_revoke_user_tokens_blocks_refresh(client: TestClient) -> None:
+    """After revoke_user_tokens, POST /refresh must return 403 team_membership_revoked."""  # noqa: E501
+    import asyncio
+
+    from src.lib.token_store import revoke_user_tokens
+
+    tokens = _register_and_get_tokens(client, "user-revoke-refresh@example.com")
+    access_token = tokens["access_token"]
+    refresh_token = tokens["refresh_token"]
+
+    me = client.get(
+        "/api/auth/me",
+        headers={"Authorization": f"Bearer {access_token}"},
+    )
+    assert me.status_code == 200
+    user_id = me.json()["id"]
+
+    asyncio.run(revoke_user_tokens(user_id))
+
+    _reset_rate_limiter()
+    refresh_resp = client.post(
+        "/api/auth/refresh",
+        json={"refresh_token": refresh_token},
+    )
+    assert refresh_resp.status_code == 403
+    assert refresh_resp.json()["detail"] == "team_membership_revoked"
+
+    # Access token issued before revoke must also be rejected on /me.
+    me_after = client.get(
+        "/api/auth/me",
+        headers={"Authorization": f"Bearer {access_token}"},
+    )
+    assert me_after.status_code == 403
+    assert me_after.json()["detail"] == "team_membership_revoked"

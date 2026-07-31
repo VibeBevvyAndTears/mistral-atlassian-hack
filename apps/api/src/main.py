@@ -1,3 +1,5 @@
+import asyncio
+import contextlib
 from collections.abc import AsyncIterator, Awaitable, Callable
 from contextlib import asynccontextmanager
 from typing import Literal
@@ -11,6 +13,7 @@ from opentelemetry import trace
 from pydantic import BaseModel
 from sqlalchemy import text
 
+from src.jobs.worker import Worker
 from src.lib.body_limit import BodySizeLimitMiddleware
 from src.lib.config import settings
 from src.lib.database import async_session_factory
@@ -22,6 +25,16 @@ from src.lib.telemetry import configure_telemetry, instrument_app
 configure_logging()
 logger = get_logger(__name__)
 
+# Ensure ORM models are registered on Base.metadata (SQLite test create_all).
+import src.channels.models  # noqa: E402
+import src.conflict.models  # noqa: E402
+import src.eval.models  # noqa: E402
+import src.glossary.models  # noqa: E402
+import src.graph.models  # noqa: E402
+import src.jobs.queue  # noqa: E402
+import src.review.models  # noqa: E402
+import src.tenancy.models  # noqa: E402, F401
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
@@ -30,8 +43,45 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     logger.info("Starting application", env=settings.PROJECT_ENV)
     configure_telemetry()
     instrument_app(app)
+
+    worker_task: asyncio.Task[None] | None = None
+    worker: Worker | None = None
+    db_is_sqlite = settings.DATABASE_URL.startswith("sqlite")
+    if (
+        settings.MISTRAL_API_KEY
+        and not settings.MISTRAL_KILL_SWITCH
+        and not db_is_sqlite
+    ):
+        from src.jobs.kinds.ingest_document import handle_ingest_document
+        from src.jobs.kinds.regenerate_rendition import handle_regenerate_rendition
+        from src.jobs.kinds.send_package import handle_send_package
+        from src.jobs.queue import JobKind
+
+        worker = Worker(
+            session_factory=async_session_factory,
+            handlers={
+                JobKind.ingest_document.value: handle_ingest_document,
+                JobKind.send_package.value: handle_send_package,
+                JobKind.regenerate_rendition.value: handle_regenerate_rendition,
+            },
+        )
+        worker_task = asyncio.create_task(worker.run_forever(), name="job-worker")
+        logger.info("Job worker started", worker_id=worker.worker_id)
+    else:
+        logger.warning(
+            "Job worker not started — need MISTRAL_API_KEY, kill-switch off, "
+            "and a non-SQLite database"
+        )
+
     yield
+
     # Shutdown
+    if worker is not None:
+        worker.stop()
+    if worker_task is not None:
+        worker_task.cancel()
+        with contextlib.suppress(asyncio.CancelledError):
+            await worker_task
     logger.info("Shutting down application")
     await aclose_storage_provider()
 
@@ -238,8 +288,28 @@ async def readiness_check() -> dict[str, str]:
 
 # Register routers here
 from src.auth.router import router as auth_router  # noqa: E402
-from src.routers.agent import router as agent_router  # noqa: E402
+from src.channels.router import router as channels_router  # noqa: E402
+from src.conflict.router import router as conflict_router  # noqa: E402
+from src.documents.router import router as documents_router  # noqa: E402
+from src.eval.router import router as eval_router  # noqa: E402
+from src.glossary.router import router as glossary_router  # noqa: E402
+from src.graph.router import router as graph_router  # noqa: E402
+from src.notifications.router import router as notifications_router  # noqa: E402
+from src.orgs.router import router as orgs_router  # noqa: E402
+from src.profiles.router import router as profiles_router  # noqa: E402
+from src.review.router import router as review_router  # noqa: E402
+from src.teams.router import router as teams_router  # noqa: E402
 
 app.include_router(auth_router, prefix="/api/auth", tags=["authentication"])
-app.include_router(agent_router, prefix="/api/agent", tags=["agent"])
+app.include_router(orgs_router, prefix="/api/orgs", tags=["orgs"])
+app.include_router(teams_router, prefix="/api", tags=["teams"])
+app.include_router(profiles_router, prefix="/api", tags=["profiles"])
+app.include_router(documents_router, prefix="/api", tags=["documents"])
+app.include_router(glossary_router, prefix="/api", tags=["glossary"])
+app.include_router(notifications_router, prefix="/api", tags=["notifications"])
+app.include_router(graph_router, prefix="/api", tags=["graph"])
+app.include_router(conflict_router, prefix="/api", tags=["conflict"])
+app.include_router(channels_router, prefix="/api", tags=["channels"])
+app.include_router(review_router, prefix="/api", tags=["review"])
+app.include_router(eval_router, prefix="/api", tags=["eval"])
 

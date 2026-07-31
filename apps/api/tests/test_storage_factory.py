@@ -18,10 +18,12 @@ def _clear_cache() -> None:
     get_storage_provider.cache_clear()
 
 
-def test_unimplemented_backend_raises(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_unimplemented_backend_falls_back_to_local(monkeypatch: pytest.MonkeyPatch) -> None:  # noqa: E501
+    from src.lib.storage.local import LocalStorageProvider
+
     monkeypatch.setattr(settings, "STORAGE_BACKEND", "minio")
-    with pytest.raises(NotImplementedError):
-        get_storage_provider()
+    provider = get_storage_provider()
+    assert isinstance(provider, LocalStorageProvider)
 
 
 def test_azure_backend_returns_adapter(monkeypatch: pytest.MonkeyPatch) -> None:

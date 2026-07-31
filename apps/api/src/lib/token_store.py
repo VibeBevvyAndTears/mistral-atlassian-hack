@@ -11,6 +11,9 @@ if TYPE_CHECKING:
 logger = get_logger(__name__)
 
 _REVOKED_KEY_PREFIX = "revoked:"
+_USER_REVOKED_KEY_PREFIX = "user_revoked:"
+# Default TTL for user-level revocation markers (7 days = refresh token lifetime).
+_USER_REVOKE_TTL_SECONDS = 60 * 60 * 24 * 7
 
 
 class InMemoryTokenStore:
@@ -201,3 +204,58 @@ async def revoke_if_not_revoked(jti: str, ttl: int) -> bool:
     """
     store = get_token_store()
     return await store.revoke_if_not_revoked(jti, ttl)
+
+
+async def revoke_user_tokens(
+    user_id: str, *, ttl: int = _USER_REVOKE_TTL_SECONDS
+) -> None:
+    """Invalidate all bearer tokens for a user (team-removal / role-downgrade path).
+
+    Stores a user-level revocation epoch. ``get_current_user`` rejects access
+    tokens whose ``iat`` is at or before this epoch (T1-F).
+
+    Args:
+        user_id: User whose tokens should be invalidated.
+        ttl: Seconds to retain the revocation marker (default: refresh lifetime).
+    """
+    import time
+
+    store = get_token_store()
+    epoch = str(int(time.time()))
+    # Reuse jti revocation channel with a namespaced key via a synthetic jti.
+    # InMemory/Redis stores only know revoke(jti, ttl); encode user epoch as jti.
+    await store.revoke(f"user:{user_id}:{epoch}", ttl)
+    # Also store a stable lookup key for is_user_revoked checks.
+    if isinstance(store, InMemoryTokenStore):
+        store._store[f"{_USER_REVOKED_KEY_PREFIX}{user_id}"] = time.time() + ttl
+        # Stash epoch in a parallel key for iat comparison.
+        store._store[f"{_USER_REVOKED_KEY_PREFIX}{user_id}:epoch"] = float(epoch)
+    elif isinstance(store, RedisTokenStore):
+        redis = await store._get_redis()
+        key = f"{_USER_REVOKED_KEY_PREFIX}{user_id}"
+        await redis.setex(key, ttl, epoch)
+
+
+async def is_user_revoked(user_id: str, token_iat: int) -> bool:
+    """Return True if the user's tokens issued at or before revoke epoch are invalid."""
+    store = get_token_store()
+    if isinstance(store, InMemoryTokenStore):
+        epoch = store._store.get(f"{_USER_REVOKED_KEY_PREFIX}{user_id}:epoch")
+        if epoch is None:
+            return False
+        expires = store._store.get(f"{_USER_REVOKED_KEY_PREFIX}{user_id}")
+        if expires is not None:
+            import time
+
+            if time.time() > expires:
+                return False
+        return token_iat <= int(epoch)
+    if isinstance(store, RedisTokenStore):
+        redis = await store._get_redis()
+        key = f"{_USER_REVOKED_KEY_PREFIX}{user_id}"
+        raw = await redis.get(key)
+        if raw is None:
+            return False
+        epoch = int(raw.decode() if isinstance(raw, bytes) else raw)
+        return token_iat <= epoch
+    return False

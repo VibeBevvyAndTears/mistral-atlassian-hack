@@ -9,5 +9,18 @@ typecheck = { run = "uv run poe typecheck", description = "Type check API" }
 migrate = { run = "uv run poe migrate", description = "Run DB migrations" }
 "migrate:create" = { run = "uv run poe migrate-create", description = "Create migration" }
 "gen:openapi" = { run = "uv run python scripts/gen_openapi.py", description = "Generate OpenAPI schema" }
+"eval:gate" = { run = "uv run python scripts/eval_regression_gate.py", description = "Run offline M7 evaluation regression gate" }
+"ci:contracts" = { run = '''
+#!/usr/bin/env bash
+set -euo pipefail
+uv run python scripts/gen_openapi.py
+cd ../web && bun run gen:api
+cd ../..
+git diff --exit-code -- apps/api/openapi.json apps/web/src/lib/api || {
+  echo "OpenAPI/Orval drift detected. Run: mise //apps/api:gen:openapi && mise //apps/web:gen:api"
+  exit 1
+}
+''', description = "Fail if OpenAPI or Orval client is out of sync (T1-C)" }
+"verify:migrate" = { run = "uv run python scripts/verify_migrate_chain.py", description = "Verify Alembic chain + pgvector compose (P2)" }
 "infra:up" = { run = "docker compose -f docker-compose.infra.yml up -d", description = "Start local infra" }
 "infra:down" = { run = "docker compose -f docker-compose.infra.yml down", description = "Stop local infra" }
