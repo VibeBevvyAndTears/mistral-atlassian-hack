@@ -8,11 +8,12 @@ from typing import Any, Literal
 from uuid import UUID
 
 from fastapi import HTTPException, status
-from sqlalchemy import case, select
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.channels.models import (
     Channel,
+    ChannelPostsPage,
     ChannelResponse,
     CrossTeamAccessLog,
     JudgeSummary,
@@ -28,6 +29,7 @@ from src.channels.models import (
 from src.jobs.queue import JobKind, enqueue
 from src.review.models import ReadState
 from src.tenancy.models import SourceDocument, Team, TeamProfile
+from src.users.model import User
 
 
 def _ordered_pair(a: UUID, b: UUID) -> tuple[UUID, UUID]:
@@ -462,6 +464,57 @@ async def create_post_with_rendition(
     return post
 
 
+def _search_tokens(q: str | None) -> list[str]:
+    if not q:
+        return []
+    return [t for t in q.casefold().split() if t]
+
+
+def _post_search_score(post: PostResponse, tokens: list[str]) -> float:
+    """Weighted multi-field lexical score.
+
+    Algorithm (channel-scoped):
+      1. Tokenize query on whitespace (case-insensitive).
+      2. Every token must match at least one field (AND semantics).
+      3. Score = sum over tokens of the best field weight hit:
+           package title 5 · topic tags 4 · adapted body 2 ·
+           original / what_was_done / sender 1
+      4. Tie-break with the active feed sort outside this function.
+
+    Good enough for per-channel feeds; upgrade path is Postgres
+    tsvector + optional embeddings when channels grow large.
+    """
+    if not tokens:
+        return 0.0
+    title = (post.package_title or "").casefold()
+    tags = " ".join(post.topic_tags).casefold()
+    adapted = (post.adapted_body or "").casefold()
+    original = (post.original_body or "").casefold()
+    done = (post.what_was_done or "").casefold()
+    sender = f"{post.sender_name or ''} {post.sender_team_name or ''}".casefold()
+
+    score = 0.0
+    for token in tokens:
+        weights: list[int] = []
+        if token in title:
+            weights.append(5)
+        if token in tags:
+            weights.append(4)
+        if token in adapted:
+            weights.append(2)
+        if token in original or token in done or token in sender:
+            weights.append(1)
+        if not weights:
+            return -1.0  # token missing → no match
+        score += max(weights)
+    return score
+
+
+def _priority_rank_value(priority: str | None) -> int:
+    key = (priority or "").casefold()
+    return {"p0": 0, "p1": 1, "p2": 2, "p3": 3}.get(key, 4)
+
+
 async def list_channel_posts(
     db: AsyncSession,
     *,
@@ -472,7 +525,10 @@ async def list_channel_posts(
     sort: Literal["priority", "newest", "oldest"] = "newest",
     unread_only: bool = False,
     topic_tags: list[str] | None = None,
-) -> list[PostResponse]:
+    q: str | None = None,
+    page: int = 1,
+    page_size: int = 10,
+) -> ChannelPostsPage:
     channel = await db.get(Channel, channel_id)
     if (
         channel is None
@@ -482,6 +538,11 @@ async def list_channel_posts(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Channel not found"
         )
+
+    page = max(1, page)
+    page_size = min(max(1, page_size), 50)
+    tokens = _search_tokens(q)
+
     stmt = (
         select(Post, ReadState.id)
         .outerjoin(
@@ -492,35 +553,90 @@ async def list_channel_posts(
     )
     if unread_only:
         stmt = stmt.where(ReadState.id.is_(None))
-    if sort == "oldest":
-        stmt = stmt.order_by(Post.created_at.asc())
-    elif sort == "priority":
-        # FR-14.6 — unread high-priority posts pin above read peers
-        priority_rank = case(
-            (Post.ai_priority == "P0", 0),
-            (Post.ai_priority == "P1", 1),
-            (Post.ai_priority == "P2", 2),
-            (Post.ai_priority == "P3", 3),
-            else_=4,
-        )
-        unread_rank = case((ReadState.id.is_(None), 0), else_=1)
-        stmt = stmt.order_by(
-            unread_rank.asc(),
-            priority_rank.asc(),
-            Post.created_at.desc(),
-        )
-    else:
-        stmt = stmt.order_by(Post.created_at.desc())
+
+    # Cheap SQL prefilter when searching — still AND-score in Python for tags/sender
+    if tokens:
+        stmt = stmt.outerjoin(Package, Package.id == Post.package_id)
+        for token in tokens:
+            pattern = f"%{token}%"
+            stmt = stmt.where(
+                Post.adapted_body.ilike(pattern)
+                | Post.original_body.ilike(pattern)
+                | Post.what_was_done.ilike(pattern)
+                | Package.title.ilike(pattern)
+            )
+
+    # Stable fetch order; final ranking applied in Python after scoring/filters
+    stmt = stmt.order_by(Post.created_at.desc())
     rows = (await db.execute(stmt)).all()
     required_tags = {tag.casefold() for tag in (topic_tags or []) if tag}
-    return [
-        await _post_response(db, post, is_read=read_id is not None)
-        for post, read_id in rows
-        if not required_tags
-        or required_tags.intersection(
+
+    scored: list[PostResponse] = []
+    for post, read_id in rows:
+        if required_tags and not required_tags.intersection(
             str(tag).casefold() for tag in (post.topic_tags or [])
+        ):
+            continue
+        item = await _post_response(db, post, is_read=read_id is not None)
+        if tokens:
+            score = _post_search_score(item, tokens)
+            if score < 0:
+                continue
+            item.search_score = score
+        scored.append(item)
+
+    if tokens:
+        # Relevance first, then active feed sort as tie-break
+        if sort == "oldest":
+            scored.sort(
+                key=lambda p: (
+                    -(p.search_score or 0),
+                    p.created_at,
+                )
+            )
+        elif sort == "priority":
+            scored.sort(
+                key=lambda p: (
+                    -(p.search_score or 0),
+                    0 if not p.is_read else 1,
+                    _priority_rank_value(p.ai_priority),
+                    -p.created_at.timestamp(),
+                )
+            )
+        else:
+            scored.sort(
+                key=lambda p: (
+                    -(p.search_score or 0),
+                    -p.created_at.timestamp(),
+                )
+            )
+    elif sort == "oldest":
+        scored.sort(key=lambda p: p.created_at)
+    elif sort == "priority":
+        scored.sort(
+            key=lambda p: (
+                0 if not p.is_read else 1,
+                _priority_rank_value(p.ai_priority),
+                -p.created_at.timestamp(),
+            )
         )
-    ]
+    else:
+        scored.sort(key=lambda p: p.created_at, reverse=True)
+
+    total = len(scored)
+    total_pages = max(1, (total + page_size - 1) // page_size) if total else 1
+    if page > total_pages:
+        page = total_pages
+    start = (page - 1) * page_size
+    items = scored[start : start + page_size]
+    return ChannelPostsPage(
+        items=items,
+        total=total,
+        page=page,
+        page_size=page_size,
+        total_pages=total_pages,
+        q=q.strip() if q and q.strip() else None,
+    )
 
 
 async def get_post(
@@ -751,21 +867,56 @@ async def _post_response(
             overall_confidence=rend.overall_confidence,
             badge=rend.badge,
         )
+
+    package_title: str | None = None
+    sender_team_id: str | None = None
+    sender_team_name: str | None = None
+    sender_name: str | None = None
+    topic_tags = [str(t) for t in (post.topic_tags or [])]
+    pkg = await db.get(Package, post.package_id)
+    if pkg is not None:
+        package_title = pkg.title
+        sender_team_id = str(pkg.team_id)
+        team = await db.get(Team, pkg.team_id)
+        if team is not None:
+            sender_team_name = team.name
+        user = await db.get(User, pkg.created_by)
+        if user is not None:
+            sender_name = user.name or user.username or user.email
+        # Backfill topic tags from sender node labels when post was stored empty
+        if not topic_tags and pkg.included_node_ids:
+            from src.graph.models import Node
+
+            for raw in pkg.included_node_ids:
+                try:
+                    nid = UUID(str(raw))
+                except ValueError:
+                    continue
+                node = await db.get(Node, nid)
+                if node is not None and node.label:
+                    label = str(node.label)
+                    if label not in topic_tags:
+                        topic_tags.append(label)
+
     return PostResponse(
         id=str(post.id),
         channel_id=str(post.channel_id),
         package_id=str(post.package_id),
+        package_title=package_title,
         version=post.version,
         adapted_body=post.adapted_body,
         original_body=post.original_body,
         what_was_done=post.what_was_done,
         ai_priority=post.ai_priority,
         ai_priority_reason=post.ai_priority_reason,
-        topic_tags=[str(t) for t in (post.topic_tags or [])],
+        topic_tags=topic_tags,
         bypassed_checks=[str(x) for x in (post.bypassed_checks or [])],
         attached_conflicts=[dict(c) for c in (post.attached_conflicts or []) if isinstance(c, dict)],  # noqa: E501
         updated_since_send=post.updated_since_send,
         is_read=is_read,
         judge=judge,
+        sender_team_id=sender_team_id,
+        sender_team_name=sender_team_name,
+        sender_name=sender_name,
         created_at=post.created_at,
     )

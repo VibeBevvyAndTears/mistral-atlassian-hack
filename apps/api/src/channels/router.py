@@ -10,6 +10,7 @@ from pydantic import BaseModel, Field
 
 from src.channels import service as channels_service
 from src.channels.models import (
+    ChannelPostsPage,
     ChannelResponse,
     PackageCreate,
     PackageResponse,
@@ -128,7 +129,7 @@ async def send_package(
     )
 
 
-@router.get("/channels/{channel_id}/posts", response_model=list[PostResponse])
+@router.get("/channels/{channel_id}/posts", response_model=ChannelPostsPage)
 async def list_posts(
     channel_id: UUID,
     scope: TenantScopeDep,
@@ -136,7 +137,10 @@ async def list_posts(
     sort: Literal["priority", "newest", "oldest"] = "newest",
     unread_only: bool = False,
     topic_tags: str | None = Query(default=None),
-) -> list[PostResponse]:
+    q: str | None = Query(default=None, description="Search posts in this channel"),
+    page: int = Query(default=1, ge=1),
+    page_size: int = Query(default=10, ge=1, le=50),
+) -> ChannelPostsPage:
     if scope.team_id is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Channel not found"
@@ -152,6 +156,9 @@ async def list_posts(
         topic_tags=[tag.strip() for tag in topic_tags.split(",") if tag.strip()]
         if topic_tags
         else [],
+        q=q,
+        page=page,
+        page_size=page_size,
     )
 
 
