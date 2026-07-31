@@ -186,6 +186,37 @@ async def _ensure_memberships(
     await db.flush()
 
 
+async def accept_pending_invites_for_email(
+    db: AsyncSession, *, user_id: UUID, email: str
+) -> None:
+    """Auto-apply invites already waiting for this email — runs at registration.
+
+    An invite for an email that already has an account is applied immediately
+    by ``create_invite`` (see ``added_immediately``). This covers the other
+    order: the invite was created before the invitee ever signed up, so it
+    would otherwise sit unused until someone manually pastes its token into
+    ``accept_invite``.
+    """
+    normalized = normalize_email(email)
+    now = datetime.now(UTC)
+    invites = (
+        await db.execute(select(Invite).where(Invite.email == normalized))
+    ).scalars().all()
+    for invite in invites:
+        if invite.expires_at is not None and invite.expires_at < now:
+            continue
+        team = await db.get(Team, invite.team_id)
+        if team is None:
+            continue
+        await _ensure_memberships(
+            db,
+            org_id=team.org_id,
+            team_id=team.id,
+            user_id=user_id,
+            role=invite.role,
+        )
+
+
 async def accept_invite(
     db: AsyncSession,
     *,
