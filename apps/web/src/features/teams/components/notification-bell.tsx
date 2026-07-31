@@ -1,7 +1,7 @@
 "use client";
 
 import { Bell } from "@phosphor-icons/react";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { apiClient } from "@/lib/api-client";
 import { isRealtimeConfigured, subscribeNotifications } from "@/lib/realtime/supabase";
@@ -52,11 +52,23 @@ function formatPayload(payload: Record<string, unknown>): string {
     .join(" · ");
 }
 
-export function NotificationBell({ onOpenChange }: { onOpenChange?: (open: boolean) => void }) {
+export function NotificationBell({
+  onOpenChange,
+  variant = "default",
+}: {
+  onOpenChange?: (open: boolean) => void;
+  variant?: "default" | "channel";
+}) {
   const [items, setItems] = useState<NotificationRow[]>([]);
   const [userId, setUserId] = useState<string | null>(null);
   const [open, setOpen] = useState(false);
   const [status, setStatus] = useState<string | null>(null);
+  const rootRef = useRef<HTMLDivElement>(null);
+
+  const close = useCallback(() => {
+    setOpen(false);
+    onOpenChange?.(false);
+  }, [onOpenChange]);
 
   const load = useCallback(async () => {
     try {
@@ -89,8 +101,25 @@ export function NotificationBell({ onOpenChange }: { onOpenChange?: (open: boole
     return () => window.clearInterval(id);
   }, [load, userId]);
 
+  useEffect(() => {
+    if (!open) return;
+    function onPointerDown(event: MouseEvent) {
+      if (!rootRef.current?.contains(event.target as Node)) close();
+    }
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") close();
+    }
+    document.addEventListener("mousedown", onPointerDown);
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.removeEventListener("mousedown", onPointerDown);
+      document.removeEventListener("keydown", onKeyDown);
+    };
+  }, [close, open]);
+
   const unread = items.filter((n) => !n.read_at);
   const openOnYou = items.filter((n) => !n.read_at && OPEN_ON_YOU_KINDS.has(n.kind));
+  const channel = variant === "channel";
 
   function toggleOpen() {
     setOpen((prev) => {
@@ -102,25 +131,36 @@ export function NotificationBell({ onOpenChange }: { onOpenChange?: (open: boole
   }
 
   return (
-    <div className="relative ml-auto">
+    <div ref={rootRef} className={channel ? "relative" : "relative ml-auto"}>
       <Button
         type="button"
-        variant="outline"
-        size="sm"
+        variant={channel ? "ghost" : "outline"}
+        size={channel ? "icon" : "sm"}
+        data-notification-bell
         aria-label={unread.length > 0 ? `Notifications, ${unread.length} unread` : "Notifications"}
         aria-expanded={open}
         onClick={toggleOpen}
-        className="gap-1.5"
+        className={
+          channel
+            ? "relative size-10 rounded-[10px] border border-ask/60 bg-transparent text-ask hover:bg-ask/10 hover:text-ask"
+            : "gap-1.5"
+        }
       >
-        <Bell className="size-4" weight={unread.length > 0 ? "fill" : "regular"} />
+        <Bell className="size-5" weight={unread.length > 0 ? "fill" : "regular"} />
         {unread.length > 0 ? (
-          <span className="rounded-full bg-destructive px-1.5 text-[10px] font-medium text-destructive-foreground">
+          <span
+            className={
+              channel
+                ? "absolute -top-0.5 -right-0.5 inline-flex min-w-4 items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-medium text-destructive-foreground"
+                : "rounded-full bg-destructive px-1.5 text-[10px] font-medium text-destructive-foreground"
+            }
+          >
             {unread.length}
           </span>
         ) : null}
       </Button>
       {open ? (
-        <div className="absolute right-0 z-20 mt-2 w-80 rounded-md border border-border bg-background p-2 text-sm shadow-sm">
+        <div className="absolute right-0 z-20 mt-2 w-80 rounded-md border border-border bg-popover p-2 text-sm shadow-[0_8px_24px_rgba(0,0,0,0.45)]">
           <div className="mb-2 flex items-center justify-between gap-2 px-1">
             <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
               Open on you

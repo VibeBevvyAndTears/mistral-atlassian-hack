@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { ConveBrandMark } from "@/components/domain/conve-brand-mark";
 
 interface ErrorProps {
   error: Error & { digest?: string };
@@ -13,13 +14,14 @@ export default function ErrorPage({ error, reset }: ErrorProps) {
   }, [error]);
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center p-24">
-      <h1 className="text-4xl font-bold text-destructive">Error</h1>
-      <p className="mt-4 text-muted-foreground">Something went wrong!</p>
+    <main className="flex min-h-svh flex-col items-center justify-center bg-background px-6 text-foreground">
+      <ConveBrandMark size="md" />
+      <h1 className="mt-4 text-2xl font-semibold tracking-tight text-destructive">Error</h1>
+      <p className="mt-2 text-muted-foreground">Something went wrong</p>
       <button
         type="button"
         onClick={reset}
-        className="mt-8 rounded-md bg-primary px-4 py-2 text-primary-foreground transition-colors hover:bg-primary/90"
+        className="mt-8 inline-flex h-10 items-center rounded-[10px] bg-primary px-4 text-sm font-medium text-primary-foreground transition-opacity duration-150 hover:opacity-90"
       >
         Try again
       </button>

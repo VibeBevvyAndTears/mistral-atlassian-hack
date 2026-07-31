@@ -107,7 +107,7 @@ export function SendComposer({ teamId }: { readonly teamId: string }) {
           aria-label="Package title"
         />
         <textarea
-          className="min-h-28 rounded-md border border-border bg-background p-2 text-sm"
+          className="min-h-28 w-full rounded-xl border border-border bg-secondary p-3 text-sm text-foreground outline-none transition-[border-color,box-shadow] duration-150 placeholder:text-muted-foreground focus-visible:border-ask-soft focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
           placeholder="Message body"
           value={body}
           onChange={(e) => setBody(e.target.value)}
@@ -133,8 +133,8 @@ export function SendComposer({ teamId }: { readonly teamId: string }) {
           </Button>
         </div>
         {blockedByNoOwner ? (
-          <p className="text-sm text-rose-700" role="alert">
-            NO OWNER — send is blocked. Assign a receiving owner on every decision before sending.
+          <p className="text-sm text-destructive" role="alert">
+            NO OWNER - send is blocked. Assign a receiving owner on every decision before sending.
           </p>
         ) : null}
         {channelId ? <p className="text-xs text-muted-foreground">Channel: {channelId}</p> : null}

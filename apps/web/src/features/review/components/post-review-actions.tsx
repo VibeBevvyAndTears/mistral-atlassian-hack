@@ -20,7 +20,10 @@ interface SuggestionRow {
   awaiting_team_ids: string[];
 }
 
-export function PostReviewActions({ postId }: Readonly<{ postId: string }>) {
+export function PostReviewActions({
+  postId,
+  embedded = false,
+}: Readonly<{ postId: string; embedded?: boolean }>) {
   const params = useParams<{ teamId: string }>();
   const teamId = params.teamId;
 
@@ -112,104 +115,112 @@ export function PostReviewActions({ postId }: Readonly<{ postId: string }>) {
     }
   }
 
+  const body = (
+    <div className="flex flex-col gap-2">
+      <div className="flex flex-wrap gap-2">
+        <Button type="button" size="sm" onClick={() => void review("agree")}>
+          Agree
+        </Button>
+        <Button
+          type="button"
+          size="sm"
+          variant="outline"
+          onClick={() => void review("request_changes")}
+        >
+          Request changes
+        </Button>
+        <Button
+          type="button"
+          size="sm"
+          variant="destructive"
+          onClick={() => void review("blocked")}
+        >
+          Blocked
+        </Button>
+      </div>
+      <Input
+        placeholder="Suggestion or comment text"
+        value={suggest}
+        onChange={(e) => setSuggest(e.target.value)}
+        aria-label="Suggestion text"
+      />
+      <div className="flex gap-2">
+        <Button type="button" disabled={!suggest} onClick={() => void propose()}>
+          Propose change
+        </Button>
+        <Button type="button" variant="outline" disabled={!suggest} onClick={() => void comment()}>
+          Comment
+        </Button>
+      </div>
+      {pending.length > 0 ? (
+        <div className="mt-2 flex flex-col gap-2 rounded-md border border-border p-2">
+          <p className="text-xs font-medium">Change approvals for this post</p>
+          {pending.map((s) => {
+            const needsApprove =
+              s.status === "awaiting_approvals" && s.awaiting_team_ids.includes(teamId);
+            const canCancel =
+              s.proposer_team_id === teamId &&
+              (s.status === "open" || s.status === "awaiting_approvals");
+            return (
+              <div key={s.id} className="text-sm">
+                <p>{s.proposed_text ?? s.adapted_preview ?? s.original_text}</p>
+                <p className="text-xs text-muted-foreground">status={s.status}</p>
+                {s.status === "awaiting_approvals" ? (
+                  <p className="text-xs text-muted-foreground">
+                    Waiting: {s.awaiting_team_ids.join(", ") || "—"}
+                  </p>
+                ) : null}
+                <div className="mt-1 flex gap-2">
+                  {needsApprove ? (
+                    <Button type="button" size="sm" onClick={() => void approve(s.id)}>
+                      Approve change
+                    </Button>
+                  ) : null}
+                  {canCancel ? (
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      onClick={() => void cancel(s.id)}
+                    >
+                      Cancel request
+                    </Button>
+                  ) : null}
+                  {s.status === "applied" && s.proposer_team_id === teamId ? (
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      onClick={() => void close(s.id)}
+                    >
+                      Close thread
+                    </Button>
+                  ) : null}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      ) : null}
+      {status ? <p className="text-sm text-muted-foreground">{status}</p> : null}
+    </div>
+  );
+
+  if (embedded) {
+    return (
+      <section className="rounded-xl border border-border bg-secondary/40 p-3">
+        <p className="mb-2 text-xs font-medium text-muted-foreground">Post review</p>
+        {body}
+      </section>
+    );
+  }
+
   return (
     <Card>
       <CardHeader>
         <CardTitle>Post review</CardTitle>
       </CardHeader>
-      <CardContent className="flex flex-col gap-2">
-        <div className="flex flex-wrap gap-2">
-          <Button type="button" size="sm" onClick={() => void review("agree")}>
-            Agree
-          </Button>
-          <Button
-            type="button"
-            size="sm"
-            variant="outline"
-            onClick={() => void review("request_changes")}
-          >
-            Request changes
-          </Button>
-          <Button
-            type="button"
-            size="sm"
-            variant="destructive"
-            onClick={() => void review("blocked")}
-          >
-            Blocked
-          </Button>
-        </div>
-        <Input
-          placeholder="Suggestion or comment text"
-          value={suggest}
-          onChange={(e) => setSuggest(e.target.value)}
-          aria-label="Suggestion text"
-        />
-        <div className="flex gap-2">
-          <Button type="button" disabled={!suggest} onClick={() => void propose()}>
-            Propose change
-          </Button>
-          <Button
-            type="button"
-            variant="outline"
-            disabled={!suggest}
-            onClick={() => void comment()}
-          >
-            Comment
-          </Button>
-        </div>
-        {pending.length > 0 ? (
-          <div className="mt-2 flex flex-col gap-2 rounded-md border border-border p-2">
-            <p className="text-xs font-medium">Change approvals for this post</p>
-            {pending.map((s) => {
-              const needsApprove =
-                s.status === "awaiting_approvals" && s.awaiting_team_ids.includes(teamId);
-              const canCancel =
-                s.proposer_team_id === teamId &&
-                (s.status === "open" || s.status === "awaiting_approvals");
-              return (
-                <div key={s.id} className="text-sm">
-                  <p>{s.proposed_text ?? s.adapted_preview ?? s.original_text}</p>
-                  <p className="text-xs text-muted-foreground">status={s.status}</p>
-                  {s.status === "awaiting_approvals" ? (
-                    <p className="text-xs text-muted-foreground">
-                      Waiting: {s.awaiting_team_ids.join(", ") || "—"}
-                    </p>
-                  ) : null}
-                  <div className="mt-1 flex gap-2">
-                    {needsApprove ? (
-                      <Button type="button" size="sm" onClick={() => void approve(s.id)}>
-                        Approve change
-                      </Button>
-                    ) : null}
-                    {canCancel ? (
-                      <Button
-                        type="button"
-                        size="sm"
-                        variant="outline"
-                        onClick={() => void cancel(s.id)}
-                      >
-                        Cancel request
-                      </Button>
-                    ) : null}
-                    {s.status === "applied" && s.proposer_team_id === teamId ? (
-                      <Button
-                        type="button"
-                        size="sm"
-                        variant="outline"
-                        onClick={() => void close(s.id)}
-                      >
-                        Close thread
-                      </Button>
-                    ) : null}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        ) : null}
-        {status ? <p className="text-sm text-muted-foreground">{status}</p> : null}
-      </CardContent>
+      <CardContent>{body}</CardContent>
     </Card>
   );
 }

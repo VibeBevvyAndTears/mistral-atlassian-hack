@@ -102,7 +102,7 @@ export function TeamDocumentsPanel({ teamId }: { teamId: string }) {
           Upload
         </Button>
         <textarea
-          className="min-h-[6rem] w-full rounded-md border border-border bg-background px-3 py-2 text-sm"
+          className="min-h-[6rem] w-full rounded-xl border border-border bg-secondary px-3 py-2 text-sm text-foreground outline-none transition-[border-color,box-shadow] duration-150 placeholder:text-muted-foreground focus-visible:border-ask-soft focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
           placeholder="Paste text to ingest…"
           value={pasteText}
           onChange={(e) => setPasteText(e.target.value)}

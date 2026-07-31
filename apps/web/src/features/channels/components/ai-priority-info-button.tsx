@@ -31,7 +31,7 @@ export function AiPriorityInfoButton() {
     <div className="relative inline-flex" ref={rootRef}>
       <button
         type="button"
-        className="inline-flex size-7 items-center justify-center rounded-full border border-border text-muted-foreground hover:bg-muted/50 hover:text-foreground"
+        className="inline-flex size-7 items-center justify-center rounded-full border border-border text-ask hover:bg-ask/10 hover:text-ask"
         aria-label="Why this priority order"
         aria-expanded={open}
         aria-controls={tipId}
@@ -45,7 +45,7 @@ export function AiPriorityInfoButton() {
         <div
           id={tipId}
           role="tooltip"
-          className="absolute top-[calc(100%+6px)] left-1/2 z-20 w-56 -translate-x-1/2 rounded-md border border-border bg-background p-2.5 text-xs shadow-sm"
+          className="absolute top-[calc(100%+6px)] left-1/2 z-20 w-56 -translate-x-1/2 rounded-xl border border-border bg-popover p-2.5 text-xs shadow-[0_8px_24px_rgba(0,0,0,0.45)]"
         >
           <p className="mb-1 text-[10px] font-medium tracking-wide text-muted-foreground uppercase">
             AI priority

@@ -78,7 +78,7 @@ export function ConflictReviewPanel({ teamId }: { teamId: string }) {
         ) : null}
         <ul className="flex flex-col gap-3">
           {items.map((item) => (
-            <li key={item.id} className="rounded-md border border-border p-3 text-sm">
+            <li key={item.id} className="rounded-xl border border-border bg-card p-3 text-sm">
               <p>
                 <span className="text-muted-foreground">Class:</span> {item.conflict_class} ·{" "}
                 {item.severity}

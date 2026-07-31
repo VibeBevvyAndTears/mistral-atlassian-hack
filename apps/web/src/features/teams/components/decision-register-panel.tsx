@@ -51,28 +51,28 @@ function statusBadgeClass(status: string): string {
   const s = displayStatus(status);
   switch (s) {
     case "contested":
-      return "bg-rose-100 text-rose-800";
+      return "bg-destructive/20 text-destructive";
     case "agreed":
-      return "bg-emerald-100 text-emerald-800";
+      return "bg-success/15 text-success";
     case "superseded":
       return "bg-muted text-muted-foreground";
     default:
-      return "bg-zinc-100 text-zinc-700";
+      return "bg-secondary text-muted-foreground";
   }
 }
 
 function cardAccentClass(status: string, hasOwner: boolean): string {
-  if (!hasOwner) return "border-l-rose-400";
+  if (!hasOwner) return "border-l-destructive";
   const s = displayStatus(status);
   switch (s) {
     case "contested":
-      return "border-l-rose-500";
+      return "border-l-destructive";
     case "agreed":
-      return "border-l-emerald-500";
+      return "border-l-success";
     case "superseded":
-      return "border-l-zinc-300 opacity-60";
+      return "border-l-border opacity-60";
     default:
-      return "border-l-zinc-300";
+      return "border-l-border";
   }
 }
 
@@ -196,11 +196,11 @@ export function DecisionRegisterPanel({ teamId }: { readonly teamId: string }) {
       <div className="flex flex-col gap-3">
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div className="flex min-w-0 flex-col gap-1">
-            <h1 className="text-xl font-semibold tracking-tight">Decisions — {pairLabel}</h1>
+            <h1 className="text-xl font-semibold tracking-tight">Decisions - {pairLabel}</h1>
             <label className="flex flex-col gap-1 text-xs text-muted-foreground">
               Interaction
               <select
-                className="h-9 min-w-[14rem] rounded-md border border-border bg-background px-2 text-sm text-foreground"
+                className="h-10 min-w-[14rem] rounded-xl border border-border bg-secondary px-3 text-sm text-foreground outline-none transition-[border-color,box-shadow] duration-150 focus-visible:border-ask-soft focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
                 value={channelId}
                 onChange={(e) => setChannelId(e.target.value)}
                 aria-label="Filter by team interaction"
@@ -279,7 +279,7 @@ export function DecisionRegisterPanel({ teamId }: { readonly teamId: string }) {
           return (
             <li
               key={d.id}
-              className={`rounded-md border border-border border-l-4 bg-card px-4 py-3 ${cardAccentClass(d.status, hasOwner)}`}
+              className={`rounded-xl border border-border border-l-4 bg-card px-4 py-3 ${cardAccentClass(d.status, hasOwner)}`}
             >
               <div className="flex flex-wrap items-start justify-between gap-2">
                 <div className="flex flex-wrap items-center gap-2">
@@ -306,11 +306,11 @@ export function DecisionRegisterPanel({ teamId }: { readonly teamId: string }) {
               </p>
               {!hasOwner ? (
                 <div className="mt-2 flex flex-wrap items-center gap-2">
-                  <span className="rounded bg-rose-100 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-rose-800">
+                  <span className="rounded bg-destructive/20 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-destructive">
                     No owner
                   </span>
-                  <span className="text-xs text-rose-700">
-                    flagged by the pre-send checklist — send is blocked until a receiver is assigned
+                  <span className="text-xs text-destructive">
+                    flagged by the pre-send checklist - send is blocked until a receiver is assigned
                   </span>
                 </div>
               ) : null}
@@ -334,13 +334,13 @@ export function DecisionRegisterPanel({ teamId }: { readonly teamId: string }) {
               Summary
             </h2>
             <div className="flex flex-wrap gap-2">
-              <span className="rounded bg-emerald-100 px-2 py-1 text-xs font-medium text-emerald-800">
+              <span className="rounded bg-success/15 px-2 py-1 text-xs font-medium text-success">
                 {summary.agreed} agreed
               </span>
-              <span className="rounded bg-rose-100 px-2 py-1 text-xs font-medium text-rose-800">
+              <span className="rounded bg-destructive/20 px-2 py-1 text-xs font-medium text-destructive">
                 {summary.contested} contested
               </span>
-              <span className="rounded bg-zinc-100 px-2 py-1 text-xs font-medium text-zinc-700">
+              <span className="rounded bg-secondary px-2 py-1 text-xs font-medium text-muted-foreground">
                 {summary.proposed} proposed
               </span>
             </div>

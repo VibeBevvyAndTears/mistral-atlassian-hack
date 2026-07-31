@@ -80,7 +80,7 @@ export function OnboardingForm() {
           id="org-name"
           value={orgName}
           onChange={(e) => setOrgName(e.target.value)}
-          placeholder="Acme"
+          placeholder="Northwind Ops"
         />
         <label className="text-sm" htmlFor="team-name">
           Team name

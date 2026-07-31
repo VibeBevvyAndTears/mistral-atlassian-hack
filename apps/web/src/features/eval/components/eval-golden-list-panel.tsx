@@ -2,6 +2,7 @@
 
 import { useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
+import { ConveBrandMark } from "@/components/domain/conve-brand-mark";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { apiClient, setTenantHeaders } from "@/lib/api-client";
@@ -54,7 +55,8 @@ export function EvalGoldenListPanel() {
   }
 
   return (
-    <main className="mx-auto flex min-h-screen w-full max-w-3xl flex-col gap-6 p-6">
+    <main className="mx-auto flex min-h-svh w-full max-w-3xl flex-col gap-6 bg-background p-6 text-foreground">
+      <ConveBrandMark size="md" />
       <Card>
         <CardHeader>
           <CardTitle>Evaluation goldens</CardTitle>
@@ -78,7 +80,7 @@ export function EvalGoldenListPanel() {
           ) : null}
           <ul className="flex flex-col gap-2">
             {goldens.map((golden) => (
-              <li key={golden.id} className="rounded-md border border-border px-3 py-2">
+              <li key={golden.id} className="rounded-xl border border-border bg-card px-3 py-2">
                 <p className="font-medium capitalize">{golden.kind}</p>
                 <p className="text-sm text-muted-foreground">{golden.notes ?? "No notes"}</p>
               </li>

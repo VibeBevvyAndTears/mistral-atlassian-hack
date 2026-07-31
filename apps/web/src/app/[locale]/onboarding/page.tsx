@@ -1,5 +1,6 @@
 import type { Locale } from "next-intl";
 import { setRequestLocale } from "next-intl/server";
+import { ConveBrandMark } from "@/components/domain/conve-brand-mark";
 import { OnboardingTabs } from "@/features/teams/components/onboarding-tabs";
 
 interface Props {
@@ -11,7 +12,10 @@ export default async function OnboardingPage({ params }: Props) {
   setRequestLocale(locale as Locale);
 
   return (
-    <main className="min-h-screen p-6">
+    <main className="flex min-h-svh flex-col items-center bg-background px-6 py-16 text-foreground">
+      <div className="mb-6">
+        <ConveBrandMark size="lg" priority />
+      </div>
       <h1 className="sr-only">Onboarding</h1>
       <OnboardingTabs />
     </main>

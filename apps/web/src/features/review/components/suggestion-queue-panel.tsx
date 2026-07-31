@@ -120,7 +120,7 @@ export function SuggestionQueuePanel({ teamId }: Readonly<{ teamId: string }>) {
             const canCancel =
               isProposer && (s.status === "open" || s.status === "awaiting_approvals");
             return (
-              <li key={s.id} className="rounded-md border border-border p-3 text-sm">
+              <li key={s.id} className="rounded-xl border border-border bg-card p-3 text-sm">
                 <p>{s.adapted_preview ?? s.original_text}</p>
                 {s.proposed_text ? (
                   <p className="mt-1 text-xs">

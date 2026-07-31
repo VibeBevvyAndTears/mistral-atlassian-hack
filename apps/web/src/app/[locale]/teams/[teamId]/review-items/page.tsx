@@ -1,6 +1,5 @@
 import type { Locale } from "next-intl";
 import { setRequestLocale } from "next-intl/server";
-import { Suspense } from "react";
 import { ConflictReviewPanel } from "@/features/teams/components/conflict-review-panel";
 import { TeamShell } from "@/features/teams/components/team-shell";
 
@@ -13,10 +12,8 @@ export default async function ReviewItemsPage({ params }: Props) {
   setRequestLocale(locale as Locale);
 
   return (
-    <Suspense fallback={<p className="p-6 text-sm">Loading…</p>}>
-      <TeamShell>
-        <ConflictReviewPanel teamId={teamId} />
-      </TeamShell>
-    </Suspense>
+    <TeamShell>
+      <ConflictReviewPanel teamId={teamId} />
+    </TeamShell>
   );
 }

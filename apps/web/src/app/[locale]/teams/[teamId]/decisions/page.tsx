@@ -1,6 +1,5 @@
 import type { Locale } from "next-intl";
 import { setRequestLocale } from "next-intl/server";
-import { Suspense } from "react";
 import { DecisionRegisterPanel } from "@/features/teams/components/decision-register-panel";
 import { TeamShell } from "@/features/teams/components/team-shell";
 
@@ -13,10 +12,8 @@ export default async function DecisionsPage({ params }: Props) {
   setRequestLocale(locale as Locale);
 
   return (
-    <Suspense fallback={<p className="p-6 text-sm">Loading…</p>}>
-      <TeamShell>
-        <DecisionRegisterPanel teamId={teamId} />
-      </TeamShell>
-    </Suspense>
+    <TeamShell>
+      <DecisionRegisterPanel teamId={teamId} />
+    </TeamShell>
   );
 }

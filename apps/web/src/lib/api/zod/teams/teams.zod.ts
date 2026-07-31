@@ -28,6 +28,33 @@ export const CreateTeamApiOrgsOrgIdTeamsPostBody = zod.object({
 })
 
 /**
+ * List all org teams, or only teams the caller belongs to when mine_only=true.
+ * @summary List Org Teams
+ */
+export const ListOrgTeamsApiOrgsOrgIdTeamsGetParams = zod.object({
+  "org_id": zod.uuid()
+})
+
+export const listOrgTeamsApiOrgsOrgIdTeamsGetQueryMineOnlyDefault = false;
+
+export const ListOrgTeamsApiOrgsOrgIdTeamsGetQueryParams = zod.object({
+  "mine_only": zod.boolean().default(listOrgTeamsApiOrgsOrgIdTeamsGetQueryMineOnlyDefault)
+})
+
+export const ListOrgTeamsApiOrgsOrgIdTeamsGetHeader = zod.object({
+  "X-Org-Id": zod.union([zod.string(),zod.null()]).optional(),
+  "X-Team-Id": zod.union([zod.string(),zod.null()]).optional()
+})
+
+export const ListOrgTeamsApiOrgsOrgIdTeamsGetResponseItem = zod.object({
+  "id": zod.string(),
+  "org_id": zod.string(),
+  "name": zod.string(),
+  "created_at": zod.iso.datetime({})
+})
+export const ListOrgTeamsApiOrgsOrgIdTeamsGetResponse = zod.array(ListOrgTeamsApiOrgsOrgIdTeamsGetResponseItem)
+
+/**
  * @summary Create Invite
  */
 export const CreateInviteApiTeamsTeamIdInvitesPostParams = zod.object({

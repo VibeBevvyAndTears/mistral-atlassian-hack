@@ -41,6 +41,7 @@ import type {
   InviteCreate,
   InviteResponse,
   ListMembersApiTeamsTeamIdMembersGet200Item,
+  ListOrgTeamsApiOrgsOrgIdTeamsGetParams,
   TeamCreate,
   TeamResponse
 } from '../model';
@@ -117,6 +118,242 @@ export const useCreateTeamApiOrgsOrgIdTeamsPost = <TError = HTTPValidationError,
       return useMutation(useCreateTeamApiOrgsOrgIdTeamsPostMutationOptions(options), queryClient);
     }
     /**
+ * List all org teams, or only teams the caller belongs to when mine_only=true.
+ * @summary List Org Teams
+ */
+export const useListOrgTeamsApiOrgsOrgIdTeamsGetHook = () => {
+        const listOrgTeamsApiOrgsOrgIdTeamsGet = useCustomInstance<TeamResponse[]>();
+
+        return useCallback((
+    orgId: string,
+    params?: ListOrgTeamsApiOrgsOrgIdTeamsGetParams,
+ signal?: AbortSignal
+) => {
+        return listOrgTeamsApiOrgsOrgIdTeamsGet(
+          {url: `/api/orgs/${orgId}/teams`, method: 'GET',
+        params, signal
+    },
+          );
+        }, [listOrgTeamsApiOrgsOrgIdTeamsGet])
+      }
+
+
+
+
+export const getListOrgTeamsApiOrgsOrgIdTeamsGetInfiniteQueryKey = (orgId: string,
+    params?: ListOrgTeamsApiOrgsOrgIdTeamsGetParams,) => {
+    return [
+    'infinite', `/api/orgs/${orgId}/teams`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+export const getListOrgTeamsApiOrgsOrgIdTeamsGetQueryKey = (orgId: string,
+    params?: ListOrgTeamsApiOrgsOrgIdTeamsGetParams,) => {
+    return [
+    `/api/orgs/${orgId}/teams`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const useListOrgTeamsApiOrgsOrgIdTeamsGetInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<ReturnType<typeof useListOrgTeamsApiOrgsOrgIdTeamsGetHook>>>>, TError = HTTPValidationError>(orgId: string,
+    params?: ListOrgTeamsApiOrgsOrgIdTeamsGetParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<ReturnType<typeof useListOrgTeamsApiOrgsOrgIdTeamsGetHook>>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListOrgTeamsApiOrgsOrgIdTeamsGetInfiniteQueryKey(orgId,params);
+
+  const listOrgTeamsApiOrgsOrgIdTeamsGet =  useListOrgTeamsApiOrgsOrgIdTeamsGetHook();
+
+    const queryFn: QueryFunction<Awaited<ReturnType<ReturnType<typeof useListOrgTeamsApiOrgsOrgIdTeamsGetHook>>>> = ({ signal }) => listOrgTeamsApiOrgsOrgIdTeamsGet(orgId,params, signal);
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: !!(orgId), ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<ReturnType<typeof useListOrgTeamsApiOrgsOrgIdTeamsGetHook>>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type ListOrgTeamsApiOrgsOrgIdTeamsGetInfiniteQueryResult = NonNullable<Awaited<ReturnType<ReturnType<typeof useListOrgTeamsApiOrgsOrgIdTeamsGetHook>>>>
+export type ListOrgTeamsApiOrgsOrgIdTeamsGetInfiniteQueryError = HTTPValidationError
+
+
+export function useListOrgTeamsApiOrgsOrgIdTeamsGetInfinite<TData = InfiniteData<Awaited<ReturnType<ReturnType<typeof useListOrgTeamsApiOrgsOrgIdTeamsGetHook>>>>, TError = HTTPValidationError>(
+ orgId: string,
+    params: undefined |  ListOrgTeamsApiOrgsOrgIdTeamsGetParams, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<ReturnType<typeof useListOrgTeamsApiOrgsOrgIdTeamsGetHook>>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<ReturnType<typeof useListOrgTeamsApiOrgsOrgIdTeamsGetHook>>>,
+          TError,
+          Awaited<ReturnType<ReturnType<typeof useListOrgTeamsApiOrgsOrgIdTeamsGetHook>>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useListOrgTeamsApiOrgsOrgIdTeamsGetInfinite<TData = InfiniteData<Awaited<ReturnType<ReturnType<typeof useListOrgTeamsApiOrgsOrgIdTeamsGetHook>>>>, TError = HTTPValidationError>(
+ orgId: string,
+    params?: ListOrgTeamsApiOrgsOrgIdTeamsGetParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<ReturnType<typeof useListOrgTeamsApiOrgsOrgIdTeamsGetHook>>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<ReturnType<typeof useListOrgTeamsApiOrgsOrgIdTeamsGetHook>>>,
+          TError,
+          Awaited<ReturnType<ReturnType<typeof useListOrgTeamsApiOrgsOrgIdTeamsGetHook>>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useListOrgTeamsApiOrgsOrgIdTeamsGetInfinite<TData = InfiniteData<Awaited<ReturnType<ReturnType<typeof useListOrgTeamsApiOrgsOrgIdTeamsGetHook>>>>, TError = HTTPValidationError>(
+ orgId: string,
+    params?: ListOrgTeamsApiOrgsOrgIdTeamsGetParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<ReturnType<typeof useListOrgTeamsApiOrgsOrgIdTeamsGetHook>>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary List Org Teams
+ */
+
+export function useListOrgTeamsApiOrgsOrgIdTeamsGetInfinite<TData = InfiniteData<Awaited<ReturnType<ReturnType<typeof useListOrgTeamsApiOrgsOrgIdTeamsGetHook>>>>, TError = HTTPValidationError>(
+ orgId: string,
+    params?: ListOrgTeamsApiOrgsOrgIdTeamsGetParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<ReturnType<typeof useListOrgTeamsApiOrgsOrgIdTeamsGetHook>>>, TError, TData>>, }
+ , queryClient?: QueryClient
+ ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = useListOrgTeamsApiOrgsOrgIdTeamsGetInfiniteQueryOptions(orgId,params,options)
+
+  const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+export const useListOrgTeamsApiOrgsOrgIdTeamsGetQueryOptions = <TData = Awaited<ReturnType<ReturnType<typeof useListOrgTeamsApiOrgsOrgIdTeamsGetHook>>>, TError = HTTPValidationError>(orgId: string,
+    params?: ListOrgTeamsApiOrgsOrgIdTeamsGetParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<ReturnType<typeof useListOrgTeamsApiOrgsOrgIdTeamsGetHook>>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListOrgTeamsApiOrgsOrgIdTeamsGetQueryKey(orgId,params);
+
+  const listOrgTeamsApiOrgsOrgIdTeamsGet =  useListOrgTeamsApiOrgsOrgIdTeamsGetHook();
+
+    const queryFn: QueryFunction<Awaited<ReturnType<ReturnType<typeof useListOrgTeamsApiOrgsOrgIdTeamsGetHook>>>> = ({ signal }) => listOrgTeamsApiOrgsOrgIdTeamsGet(orgId,params, signal);
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: !!(orgId), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<ReturnType<typeof useListOrgTeamsApiOrgsOrgIdTeamsGetHook>>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type ListOrgTeamsApiOrgsOrgIdTeamsGetQueryResult = NonNullable<Awaited<ReturnType<ReturnType<typeof useListOrgTeamsApiOrgsOrgIdTeamsGetHook>>>>
+export type ListOrgTeamsApiOrgsOrgIdTeamsGetQueryError = HTTPValidationError
+
+
+export function useListOrgTeamsApiOrgsOrgIdTeamsGet<TData = Awaited<ReturnType<ReturnType<typeof useListOrgTeamsApiOrgsOrgIdTeamsGetHook>>>, TError = HTTPValidationError>(
+ orgId: string,
+    params: undefined |  ListOrgTeamsApiOrgsOrgIdTeamsGetParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<ReturnType<typeof useListOrgTeamsApiOrgsOrgIdTeamsGetHook>>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<ReturnType<typeof useListOrgTeamsApiOrgsOrgIdTeamsGetHook>>>,
+          TError,
+          Awaited<ReturnType<ReturnType<typeof useListOrgTeamsApiOrgsOrgIdTeamsGetHook>>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useListOrgTeamsApiOrgsOrgIdTeamsGet<TData = Awaited<ReturnType<ReturnType<typeof useListOrgTeamsApiOrgsOrgIdTeamsGetHook>>>, TError = HTTPValidationError>(
+ orgId: string,
+    params?: ListOrgTeamsApiOrgsOrgIdTeamsGetParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<ReturnType<typeof useListOrgTeamsApiOrgsOrgIdTeamsGetHook>>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<ReturnType<typeof useListOrgTeamsApiOrgsOrgIdTeamsGetHook>>>,
+          TError,
+          Awaited<ReturnType<ReturnType<typeof useListOrgTeamsApiOrgsOrgIdTeamsGetHook>>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useListOrgTeamsApiOrgsOrgIdTeamsGet<TData = Awaited<ReturnType<ReturnType<typeof useListOrgTeamsApiOrgsOrgIdTeamsGetHook>>>, TError = HTTPValidationError>(
+ orgId: string,
+    params?: ListOrgTeamsApiOrgsOrgIdTeamsGetParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<ReturnType<typeof useListOrgTeamsApiOrgsOrgIdTeamsGetHook>>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary List Org Teams
+ */
+
+export function useListOrgTeamsApiOrgsOrgIdTeamsGet<TData = Awaited<ReturnType<ReturnType<typeof useListOrgTeamsApiOrgsOrgIdTeamsGetHook>>>, TError = HTTPValidationError>(
+ orgId: string,
+    params?: ListOrgTeamsApiOrgsOrgIdTeamsGetParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<ReturnType<typeof useListOrgTeamsApiOrgsOrgIdTeamsGetHook>>>, TError, TData>>, }
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = useListOrgTeamsApiOrgsOrgIdTeamsGetQueryOptions(orgId,params,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+export const useListOrgTeamsApiOrgsOrgIdTeamsGetSuspenseQueryOptions = <TData = Awaited<ReturnType<ReturnType<typeof useListOrgTeamsApiOrgsOrgIdTeamsGetHook>>>, TError = HTTPValidationError>(orgId: string,
+    params?: ListOrgTeamsApiOrgsOrgIdTeamsGetParams, options?: { query?:Partial<UseSuspenseQueryOptions<Awaited<ReturnType<ReturnType<typeof useListOrgTeamsApiOrgsOrgIdTeamsGetHook>>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListOrgTeamsApiOrgsOrgIdTeamsGetQueryKey(orgId,params);
+
+  const listOrgTeamsApiOrgsOrgIdTeamsGet =  useListOrgTeamsApiOrgsOrgIdTeamsGetHook();
+
+    const queryFn: QueryFunction<Awaited<ReturnType<ReturnType<typeof useListOrgTeamsApiOrgsOrgIdTeamsGetHook>>>> = ({ signal }) => listOrgTeamsApiOrgsOrgIdTeamsGet(orgId,params, signal);
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseSuspenseQueryOptions<Awaited<ReturnType<ReturnType<typeof useListOrgTeamsApiOrgsOrgIdTeamsGetHook>>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type ListOrgTeamsApiOrgsOrgIdTeamsGetSuspenseQueryResult = NonNullable<Awaited<ReturnType<ReturnType<typeof useListOrgTeamsApiOrgsOrgIdTeamsGetHook>>>>
+export type ListOrgTeamsApiOrgsOrgIdTeamsGetSuspenseQueryError = HTTPValidationError
+
+
+export function useListOrgTeamsApiOrgsOrgIdTeamsGetSuspense<TData = Awaited<ReturnType<ReturnType<typeof useListOrgTeamsApiOrgsOrgIdTeamsGetHook>>>, TError = HTTPValidationError>(
+ orgId: string,
+    params: undefined |  ListOrgTeamsApiOrgsOrgIdTeamsGetParams, options: { query:Partial<UseSuspenseQueryOptions<Awaited<ReturnType<ReturnType<typeof useListOrgTeamsApiOrgsOrgIdTeamsGetHook>>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useListOrgTeamsApiOrgsOrgIdTeamsGetSuspense<TData = Awaited<ReturnType<ReturnType<typeof useListOrgTeamsApiOrgsOrgIdTeamsGetHook>>>, TError = HTTPValidationError>(
+ orgId: string,
+    params?: ListOrgTeamsApiOrgsOrgIdTeamsGetParams, options?: { query?:Partial<UseSuspenseQueryOptions<Awaited<ReturnType<ReturnType<typeof useListOrgTeamsApiOrgsOrgIdTeamsGetHook>>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useListOrgTeamsApiOrgsOrgIdTeamsGetSuspense<TData = Awaited<ReturnType<ReturnType<typeof useListOrgTeamsApiOrgsOrgIdTeamsGetHook>>>, TError = HTTPValidationError>(
+ orgId: string,
+    params?: ListOrgTeamsApiOrgsOrgIdTeamsGetParams, options?: { query?:Partial<UseSuspenseQueryOptions<Awaited<ReturnType<ReturnType<typeof useListOrgTeamsApiOrgsOrgIdTeamsGetHook>>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary List Org Teams
+ */
+
+export function useListOrgTeamsApiOrgsOrgIdTeamsGetSuspense<TData = Awaited<ReturnType<ReturnType<typeof useListOrgTeamsApiOrgsOrgIdTeamsGetHook>>>, TError = HTTPValidationError>(
+ orgId: string,
+    params?: ListOrgTeamsApiOrgsOrgIdTeamsGetParams, options?: { query?:Partial<UseSuspenseQueryOptions<Awaited<ReturnType<ReturnType<typeof useListOrgTeamsApiOrgsOrgIdTeamsGetHook>>>, TError, TData>>, }
+ , queryClient?: QueryClient
+ ):  UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = useListOrgTeamsApiOrgsOrgIdTeamsGetSuspenseQueryOptions(orgId,params,options)
+
+  const query = useSuspenseQuery(queryOptions, queryClient) as  UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+/**
  * @summary Create Invite
  */
 export const useCreateInviteApiTeamsTeamIdInvitesPostHook = () => {

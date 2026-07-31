@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { Locale } from "next-intl";
 import { setRequestLocale } from "next-intl/server";
+import { ConveBrandMark } from "@/components/domain/conve-brand-mark";
 
 interface HomePageProps {
   params: Promise<{ locale: string }>;
@@ -11,16 +12,22 @@ export default async function HomePage({ params }: HomePageProps) {
   setRequestLocale(locale as Locale);
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center gap-6 p-24">
-      <h1 className="text-4xl font-bold tracking-tight">Cross-Team</h1>
-      <p className="max-w-md text-center text-muted-foreground">
-        Cross-team communication with topic graphs, conflict detection, and audience adaptation.
+    <main className="flex min-h-svh flex-col items-center justify-center gap-6 bg-background px-6 py-16 text-foreground">
+      <ConveBrandMark size="lg" priority />
+      <p className="max-w-md text-center text-base text-muted-foreground">
+        Cross-team channels with conflict review, suggestions, and audience adaptation.
       </p>
-      <div className="flex gap-3 text-sm">
-        <Link className="underline underline-offset-4" href="/login">
+      <div className="flex gap-3">
+        <Link
+          className="inline-flex h-10 items-center rounded-[10px] bg-primary px-4 text-sm font-medium text-primary-foreground transition-opacity duration-150 hover:opacity-90"
+          href={`/${locale}/login`}
+        >
           Sign in
         </Link>
-        <Link className="underline underline-offset-4" href={`/${locale}/onboarding`}>
+        <Link
+          className="inline-flex h-10 items-center rounded-[10px] border border-border bg-secondary px-4 text-sm font-medium text-foreground transition-colors duration-150 hover:bg-[#2c3038]"
+          href={`/${locale}/onboarding`}
+        >
           Onboarding
         </Link>
       </div>

@@ -48,6 +48,7 @@ export * from './judge-summary';
 export * from './list-channel-decisions-api-channels-channel-id-decisions-get-params';
 export * from './list-members-api-teams-team-id-members-get200-item';
 export * from './list-notifications-api-notifications-get-params';
+export * from './list-org-teams-api-orgs-org-id-teams-get-params';
 export * from './list-posts-api-channels-channel-id-posts-get-params';
 export * from './list-posts-api-channels-channel-id-posts-get-sort';
 export * from './list-review-items-api-teams-team-id-review-items-get-params';

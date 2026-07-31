@@ -40,6 +40,10 @@ const nextConfig: NextConfig = {
   poweredByHeader: false,
   reactStrictMode: true,
   reactCompiler: true,
+  // Next 16 blocks /_next/* from non-allowed hosts. Browsers often use 127.0.0.1
+  // while the dev server advertises localhost — that breaks client hydration
+  // (navbar / form clicks appear dead).
+  allowedDevOrigins: ["127.0.0.1", "localhost"],
   devIndicators: isDev ? undefined : false,
   images: {
     formats: ["image/avif", "image/webp"],
