@@ -130,7 +130,46 @@ export const ListTeamDecisionsApiTeamsTeamIdDecisionsGetResponseItem = zod.objec
   "source": zod.string(),
   "status": zod.string().default(listTeamDecisionsApiTeamsTeamIdDecisionsGetResponseStatusDefault),
   "owner_team_id": zod.union([zod.string(),zod.null()]).optional(),
+  "owner_team_name": zod.union([zod.string(),zod.null()]).optional(),
+  "channel_id": zod.union([zod.string(),zod.null()]).optional(),
+  "superseded_by": zod.union([zod.string(),zod.null()]).optional(),
   "created_at": zod.iso.datetime({})
 })
 export const ListTeamDecisionsApiTeamsTeamIdDecisionsGetResponse = zod.array(ListTeamDecisionsApiTeamsTeamIdDecisionsGetResponseItem)
+
+/**
+ * @summary List Channel Decisions
+ */
+export const ListChannelDecisionsApiChannelsChannelIdDecisionsGetParams = zod.object({
+  "channel_id": zod.uuid()
+})
+
+export const listChannelDecisionsApiChannelsChannelIdDecisionsGetQueryStatusDefault = `all`;
+
+export const ListChannelDecisionsApiChannelsChannelIdDecisionsGetQueryParams = zod.object({
+  "status": zod.union([zod.string(),zod.null()]).default(listChannelDecisionsApiChannelsChannelIdDecisionsGetQueryStatusDefault)
+})
+
+export const ListChannelDecisionsApiChannelsChannelIdDecisionsGetHeader = zod.object({
+  "X-Org-Id": zod.union([zod.string(),zod.null()]).optional(),
+  "X-Team-Id": zod.union([zod.string(),zod.null()]).optional()
+})
+
+export const listChannelDecisionsApiChannelsChannelIdDecisionsGetResponseStatusDefault = `open`;
+
+export const ListChannelDecisionsApiChannelsChannelIdDecisionsGetResponseItem = zod.object({
+  "id": zod.string(),
+  "team_id": zod.string(),
+  "claim_id": zod.string(),
+  "title": zod.string(),
+  "body": zod.string(),
+  "source": zod.string(),
+  "status": zod.string().default(listChannelDecisionsApiChannelsChannelIdDecisionsGetResponseStatusDefault),
+  "owner_team_id": zod.union([zod.string(),zod.null()]).optional(),
+  "owner_team_name": zod.union([zod.string(),zod.null()]).optional(),
+  "channel_id": zod.union([zod.string(),zod.null()]).optional(),
+  "superseded_by": zod.union([zod.string(),zod.null()]).optional(),
+  "created_at": zod.iso.datetime({})
+})
+export const ListChannelDecisionsApiChannelsChannelIdDecisionsGetResponse = zod.array(ListChannelDecisionsApiChannelsChannelIdDecisionsGetResponseItem)
 

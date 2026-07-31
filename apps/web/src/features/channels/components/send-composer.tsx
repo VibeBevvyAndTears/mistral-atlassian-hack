@@ -6,14 +6,25 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { apiClient } from "@/lib/api-client";
 
-export function SendComposer({ teamId }: { teamId: string }) {
+interface ChecklistResult {
+  ok?: boolean;
+  no_unowned_decisions?: boolean;
+  unowned_decision_titles?: string[];
+  [key: string]: unknown;
+}
+
+export function SendComposer({ teamId }: { readonly teamId: string }) {
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
   const [targetTeamId, setTargetTeamId] = useState("");
   const [status, setStatus] = useState<string | null>(null);
   const [packageId, setPackageId] = useState<string | null>(null);
   const [channelId, setChannelId] = useState<string | null>(null);
+  const [checklist, setChecklist] = useState<ChecklistResult | null>(null);
   const [loading, setLoading] = useState(false);
+
+  const blockedByNoOwner = checklist?.no_unowned_decisions === false;
+  const canSend = Boolean(packageId) && checklist?.ok === true && !blockedByNoOwner;
 
   async function createPackage() {
     setLoading(true);
@@ -22,7 +33,7 @@ export function SendComposer({ teamId }: { teamId: string }) {
       const { data } = await apiClient.post<{
         id: string;
         channel_id: string | null;
-        checklist: Record<string, unknown>;
+        checklist: ChecklistResult;
         bypassed_checks: string[];
         status: string;
       }>(`/api/teams/${teamId}/packages`, {
@@ -33,26 +44,51 @@ export function SendComposer({ teamId }: { teamId: string }) {
       });
       setPackageId(data.id);
       setChannelId(data.channel_id);
-      setStatus(
-        `Package ${data.status} — checklist ok=${String(data.checklist.ok)}; bypassed=${data.bypassed_checks.join(",") || "none"}`
-      );
+      setChecklist(data.checklist);
+      if (data.checklist.no_unowned_decisions === false) {
+        const titles = data.checklist.unowned_decision_titles ?? [];
+        setStatus(
+          `Cannot send: every decision needs an owner (receiver). ${
+            titles.length
+              ? `Unowned: ${titles.join(", ")}`
+              : "Assign owners in the Decision register."
+          }`
+        );
+      } else {
+        setStatus(
+          `Package ${data.status} — checklist ok=${String(data.checklist.ok)}; bypassed=${data.bypassed_checks.join(",") || "none"}`
+        );
+      }
     } catch {
       setStatus("Create package failed.");
+      setChecklist(null);
+      setPackageId(null);
     } finally {
       setLoading(false);
     }
   }
 
   async function send() {
-    if (!packageId) return;
+    if (!packageId || !canSend) return;
     setLoading(true);
     try {
       const { data } = await apiClient.post<{ status: string; job_id: string | null }>(
         `/api/packages/${packageId}/send`
       );
       setStatus(`Send enqueued — status=${data.status} job=${data.job_id ?? "—"}`);
-    } catch {
-      setStatus("Send failed — Lead role + checklist required.");
+    } catch (err: unknown) {
+      const detail =
+        typeof err === "object" &&
+        err !== null &&
+        "response" in err &&
+        typeof (err as { response?: { data?: { detail?: string } } }).response?.data?.detail ===
+          "string"
+          ? (err as { response: { data: { detail: string } } }).response.data.detail
+          : null;
+      setStatus(
+        detail ??
+          "Send failed — Lead role required, and every decision must have an owner before send."
+      );
     } finally {
       setLoading(false);
     }
@@ -78,10 +114,11 @@ export function SendComposer({ teamId }: { teamId: string }) {
           aria-label="Package body"
         />
         <Input
-          placeholder="Target team UUID"
+          placeholder="Target team UUID (receiver)"
           value={targetTeamId}
           onChange={(e) => setTargetTeamId(e.target.value)}
           aria-label="Target team id"
+          required
         />
         <div className="flex gap-2">
           <Button
@@ -91,10 +128,15 @@ export function SendComposer({ teamId }: { teamId: string }) {
           >
             Run checklist
           </Button>
-          <Button type="button" disabled={loading || !packageId} onClick={() => void send()}>
+          <Button type="button" disabled={loading || !canSend} onClick={() => void send()}>
             Send
           </Button>
         </div>
+        {blockedByNoOwner ? (
+          <p className="text-sm text-rose-700" role="alert">
+            NO OWNER — send is blocked. Assign a receiving owner on every decision before sending.
+          </p>
+        ) : null}
         {channelId ? <p className="text-xs text-muted-foreground">Channel: {channelId}</p> : null}
         {status ? <p className="text-sm text-muted-foreground">{status}</p> : null}
       </CardContent>

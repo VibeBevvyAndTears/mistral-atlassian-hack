@@ -188,6 +188,10 @@ class ChannelResponse(BaseModel):
     org_id: str
     team_a_id: str
     team_b_id: str
+    team_a_name: str | None = None
+    team_b_name: str | None = None
+    peer_team_id: str | None = None
+    peer_team_name: str | None = None
     created_at: datetime
 
 
@@ -230,6 +234,7 @@ class PostResponse(BaseModel):
     id: str
     channel_id: str
     package_id: str
+    package_title: str | None = None
     version: int
     adapted_body: str
     original_body: str
@@ -242,7 +247,22 @@ class PostResponse(BaseModel):
     updated_since_send: bool = False
     is_read: bool = False
     judge: JudgeSummary | None = None
+    sender_team_id: str | None = None
+    sender_team_name: str | None = None
+    sender_name: str | None = None
     created_at: datetime
+    search_score: float | None = None
+
+
+class ChannelPostsPage(BaseModel):
+    """Paginated channel feed (search + page)."""
+
+    items: list[PostResponse] = Field(default_factory=list)
+    total: int
+    page: int
+    page_size: int
+    total_pages: int
+    q: str | None = None
 
 
 class PostHistoryEntry(BaseModel):

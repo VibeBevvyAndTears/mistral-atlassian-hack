@@ -11,6 +11,7 @@
 export interface UserResponse {
   id: string;
   email: string;
+  username?: string | null;
   name?: string | null;
   image?: string | null;
   email_verified?: boolean;

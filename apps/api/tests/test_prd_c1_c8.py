@@ -400,10 +400,13 @@ def test_c6_view_source_endpoint(client: TestClient) -> None:
     repo_root = Path(__file__).resolve().parents[3]
     ui_path = (
         repo_root
-        / "apps/web/src/features/channels/components/channel-feed-panel.tsx"
+        / "apps/web/src/features/channels/components/channel-post-detail-card.tsx"
     )
     ui = ui_path.read_text(encoding="utf-8")
     assert "openSources" in ui
+    assert "View source" in ui
+    assert "History" in ui
+    assert "Topics from sender nodes" in ui
     assert "originating package/docs for post" not in ui
 
 

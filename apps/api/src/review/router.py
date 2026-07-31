@@ -82,6 +82,45 @@ async def respond_suggestion(
     )
 
 
+@router.post("/suggestions/{suggestion_id}/approve", response_model=SuggestionResponse)
+async def approve_suggestion(
+    suggestion_id: UUID,
+    scope: TenantScopeDep,
+    db: DBSession,
+) -> SuggestionResponse:
+    """Record this team's approval; applies when both teams have approved."""
+    if scope.team_id is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Suggestion not found"
+        )
+    return await review_service.approve_suggestion(
+        db,
+        org_id=scope.org_id,
+        team_id=scope.team_id,
+        user_id=scope.user_id,
+        suggestion_id=suggestion_id,
+    )
+
+
+@router.post("/suggestions/{suggestion_id}/cancel", response_model=SuggestionResponse)
+async def cancel_suggestion(
+    suggestion_id: UUID,
+    scope: TenantScopeDep,
+    db: DBSession,
+) -> SuggestionResponse:
+    """Proposer withdraws the edit request (open or awaiting approvals only)."""
+    if scope.team_id is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Suggestion not found"
+        )
+    return await review_service.cancel_suggestion(
+        db,
+        org_id=scope.org_id,
+        team_id=scope.team_id,
+        suggestion_id=suggestion_id,
+    )
+
+
 @router.post("/suggestions/{suggestion_id}/close", response_model=SuggestionResponse)
 async def close_suggestion(
     suggestion_id: UUID,

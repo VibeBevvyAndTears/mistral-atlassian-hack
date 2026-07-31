@@ -10,5 +10,9 @@ export interface ChannelResponse {
   org_id: string;
   team_a_id: string;
   team_b_id: string;
+  team_a_name?: string | null;
+  team_b_name?: string | null;
+  peer_team_id?: string | null;
+  peer_team_name?: string | null;
   created_at: string;
 }

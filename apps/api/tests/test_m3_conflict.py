@@ -68,6 +68,18 @@ def test_ingest_conflict_step_uses_mistral() -> None:
     assert "FakeAIProvider(" not in inspect.getsource(mod)
 
 
+def test_ingest_conflict_scans_team_wide_claims() -> None:
+    """Regression: new doc must conflict against prior team claims, not only itself."""
+    from src.jobs.kinds import ingest_document as mod
+
+    src = inspect.getsource(mod.handle_ingest_document)
+    conflict_section = src.split("STEP_CONFLICT not in steps", 1)[1].split(
+        "promote_decision_claims", 1
+    )[0]
+    assert "Claim.team_id == team_id" in conflict_section
+    assert "Claim.document_id == document_id" not in conflict_section
+
+
 def _trace(stage: str, output: object) -> AgentTrace:
     return AgentTrace(
         stage=stage,

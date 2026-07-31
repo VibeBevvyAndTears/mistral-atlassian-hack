@@ -195,13 +195,45 @@ def test_suggestion_review_action_comment_flow(client: TestClient) -> None:
     assert listed.status_code == 200
     assert any(s["id"] == sug_id for s in listed.json())
 
-    accepted = client.post(
+    # Team A proposes accept — does NOT apply until Team B also approves
+    proposed = client.post(
         f"/api/suggestions/{sug_id}/respond",
         json={"response": "accept"},
         headers=_auth(t["token"], t["org"], t["team_a"]),
     )
-    assert accepted.status_code == 200, accepted.text
-    assert accepted.json()["status"] == "accepted"
+    assert proposed.status_code == 200, proposed.text
+    assert proposed.json()["status"] == "awaiting_approvals"
+    assert str(t["team_a"]) in proposed.json()["approved_team_ids"]
+    assert str(t["team_b"]) in proposed.json()["awaiting_team_ids"]
+
+    # Node must still be unchanged before dual approve
+    from src.graph.models import Node
+    from src.lib.database import async_session_factory
+
+    async def _node_summary() -> str:
+        async with async_session_factory() as session:
+            node = await session.get(Node, UUID(seeded["node_id"]))
+            assert node is not None
+            return node.summary
+
+    assert asyncio.run(_node_summary()) == "We ship Friday"
+
+    # Team B approves → apply
+    approved = client.post(
+        f"/api/suggestions/{sug_id}/approve",
+        headers=_auth(t["token"], t["org"], t["team_b"]),
+    )
+    assert approved.status_code == 200, approved.text
+    assert approved.json()["status"] == "applied"
+    assert set(approved.json()["approved_team_ids"]) == {t["team_a"], t["team_b"]}
+    assert asyncio.run(_node_summary()) == "Please clarify Friday timezone"
+
+    closed = client.post(
+        f"/api/suggestions/{sug_id}/close",
+        headers=_auth(t["token"], t["org"], t["team_b"]),
+    )
+    assert closed.status_code == 200, closed.text
+    assert closed.json()["status"] == "closed"
 
     action = client.post(
         f"/api/posts/{seeded['post_id']}/review-actions",
@@ -229,6 +261,92 @@ def test_suggestion_review_action_comment_flow(client: TestClient) -> None:
         headers=_auth(t["token"], t["org"], t["team_a"]),
     )
     assert decisions.status_code == 200
+
+
+def test_proposer_can_cancel_open_and_awaiting(client: TestClient) -> None:
+    t = _two_teams(client)
+    ch = client.post(
+        f"/api/orgs/{t['org']}/channels",
+        json={"team_a_id": t["team_a"], "team_b_id": t["team_b"]},
+        headers=_auth(t["token"], t["org"], t["team_a"]),
+    ).json()["id"]
+    pkg = client.post(
+        f"/api/teams/{t['team_a']}/packages",
+        json={
+            "title": "Cancel demo",
+            "body": "Ship Friday.",
+            "target_team_id": t["team_b"],
+            "bypass_incomplete_pipeline": True,
+        },
+        headers=_auth(t["token"], t["org"], t["team_a"]),
+    ).json()["id"]
+    seeded = _seed_post_with_node(
+        org_id=t["org"],
+        team_a=t["team_a"],
+        team_b=t["team_b"],
+        user_id=t["user_id"],
+        channel_id=ch,
+        package_id=pkg,
+    )
+
+    # Cancel while open
+    open_sug = client.post(
+        f"/api/posts/{seeded['post_id']}/suggestions",
+        json={"text": "Please change Friday", "target_node_id": seeded["node_id"]},
+        headers=_auth(t["token"], t["org"], t["team_b"]),
+    )
+    assert open_sug.status_code == 201, open_sug.text
+    open_id = open_sug.json()["id"]
+
+    listed_b = client.get(
+        f"/api/teams/{t['team_b']}/suggestions",
+        headers=_auth(t["token"], t["org"], t["team_b"]),
+    )
+    assert listed_b.status_code == 200
+    assert any(s["id"] == open_id for s in listed_b.json())
+
+    cancelled_open = client.post(
+        f"/api/suggestions/{open_id}/cancel",
+        headers=_auth(t["token"], t["org"], t["team_b"]),
+    )
+    assert cancelled_open.status_code == 200, cancelled_open.text
+    assert cancelled_open.json()["status"] == "cancelled"
+
+    # Team A cannot cancel B's suggestion
+    awaiting_sug = client.post(
+        f"/api/posts/{seeded['post_id']}/suggestions",
+        json={"text": "Another edit ask", "target_node_id": seeded["node_id"]},
+        headers=_auth(t["token"], t["org"], t["team_b"]),
+    )
+    assert awaiting_sug.status_code == 201
+    awaiting_id = awaiting_sug.json()["id"]
+    proposed = client.post(
+        f"/api/suggestions/{awaiting_id}/respond",
+        json={"response": "accept"},
+        headers=_auth(t["token"], t["org"], t["team_a"]),
+    )
+    assert proposed.status_code == 200
+    assert proposed.json()["status"] == "awaiting_approvals"
+
+    a_cancel = client.post(
+        f"/api/suggestions/{awaiting_id}/cancel",
+        headers=_auth(t["token"], t["org"], t["team_a"]),
+    )
+    assert a_cancel.status_code == 404
+
+    b_cancel = client.post(
+        f"/api/suggestions/{awaiting_id}/cancel",
+        headers=_auth(t["token"], t["org"], t["team_b"]),
+    )
+    assert b_cancel.status_code == 200, b_cancel.text
+    assert b_cancel.json()["status"] == "cancelled"
+
+    # Cannot cancel after cancel
+    again = client.post(
+        f"/api/suggestions/{awaiting_id}/cancel",
+        headers=_auth(t["token"], t["org"], t["team_b"]),
+    )
+    assert again.status_code == 409
 
 
 def test_stale_target_409(client: TestClient) -> None:

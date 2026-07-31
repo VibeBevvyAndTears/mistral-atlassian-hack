@@ -145,7 +145,11 @@ def test_channel_package_checklist_and_send_enqueue(client: TestClient) -> None:
         headers=_auth(t["token"], t["org"], t["team_a"]),
     )
     assert feed.status_code == 200
-    assert feed.json() == []
+    page = feed.json()
+    assert page["items"] == []
+    assert page["total"] == 0
+    assert page["page"] == 1
+    assert page["page_size"] == 10
 
 
 def test_package_cross_tenant_404(client: TestClient) -> None:

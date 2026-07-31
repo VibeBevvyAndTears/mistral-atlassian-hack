@@ -27,12 +27,16 @@ export const ListSuggestionsApiTeamsTeamIdSuggestionsGetResponseItem = zod.objec
   "target_team_id": zod.string(),
   "original_text": zod.string(),
   "adapted_preview": zod.union([zod.string(),zod.null()]).optional(),
+  "proposed_text": zod.union([zod.string(),zod.null()]).optional(),
   "status": zod.string(),
   "response": zod.union([zod.string(),zod.null()]).optional(),
   "response_reason": zod.union([zod.string(),zod.null()]).optional(),
   "target_node_id": zod.union([zod.string(),zod.null()]).optional(),
   "target_node_version": zod.union([zod.number(),zod.null()]).optional(),
   "suggestion_type": zod.union([zod.enum(['edit_text', 'add_detail', 'flag_incorrect', 'request_clarification', 'propose_alternative']),zod.null()]).optional(),
+  "approved_team_ids": zod.array(zod.string()).optional(),
+  "awaiting_team_ids": zod.array(zod.string()).optional(),
+  "applied_at": zod.union([zod.iso.datetime({}),zod.null()]).optional(),
   "created_at": zod.iso.datetime({})
 })
 export const ListSuggestionsApiTeamsTeamIdSuggestionsGetResponse = zod.array(ListSuggestionsApiTeamsTeamIdSuggestionsGetResponseItem)
@@ -84,12 +88,84 @@ export const RespondSuggestionApiSuggestionsSuggestionIdRespondPostResponse = zo
   "target_team_id": zod.string(),
   "original_text": zod.string(),
   "adapted_preview": zod.union([zod.string(),zod.null()]).optional(),
+  "proposed_text": zod.union([zod.string(),zod.null()]).optional(),
   "status": zod.string(),
   "response": zod.union([zod.string(),zod.null()]).optional(),
   "response_reason": zod.union([zod.string(),zod.null()]).optional(),
   "target_node_id": zod.union([zod.string(),zod.null()]).optional(),
   "target_node_version": zod.union([zod.number(),zod.null()]).optional(),
   "suggestion_type": zod.union([zod.enum(['edit_text', 'add_detail', 'flag_incorrect', 'request_clarification', 'propose_alternative']),zod.null()]).optional(),
+  "approved_team_ids": zod.array(zod.string()).optional(),
+  "awaiting_team_ids": zod.array(zod.string()).optional(),
+  "applied_at": zod.union([zod.iso.datetime({}),zod.null()]).optional(),
+  "created_at": zod.iso.datetime({})
+})
+
+/**
+ * Record this team's approval; applies when both teams have approved.
+ * @summary Approve Suggestion
+ */
+export const ApproveSuggestionApiSuggestionsSuggestionIdApprovePostParams = zod.object({
+  "suggestion_id": zod.uuid()
+})
+
+export const ApproveSuggestionApiSuggestionsSuggestionIdApprovePostHeader = zod.object({
+  "X-Org-Id": zod.union([zod.string(),zod.null()]).optional(),
+  "X-Team-Id": zod.union([zod.string(),zod.null()]).optional()
+})
+
+export const ApproveSuggestionApiSuggestionsSuggestionIdApprovePostResponse = zod.object({
+  "id": zod.string(),
+  "post_id": zod.string(),
+  "package_id": zod.string(),
+  "proposer_team_id": zod.string(),
+  "target_team_id": zod.string(),
+  "original_text": zod.string(),
+  "adapted_preview": zod.union([zod.string(),zod.null()]).optional(),
+  "proposed_text": zod.union([zod.string(),zod.null()]).optional(),
+  "status": zod.string(),
+  "response": zod.union([zod.string(),zod.null()]).optional(),
+  "response_reason": zod.union([zod.string(),zod.null()]).optional(),
+  "target_node_id": zod.union([zod.string(),zod.null()]).optional(),
+  "target_node_version": zod.union([zod.number(),zod.null()]).optional(),
+  "suggestion_type": zod.union([zod.enum(['edit_text', 'add_detail', 'flag_incorrect', 'request_clarification', 'propose_alternative']),zod.null()]).optional(),
+  "approved_team_ids": zod.array(zod.string()).optional(),
+  "awaiting_team_ids": zod.array(zod.string()).optional(),
+  "applied_at": zod.union([zod.iso.datetime({}),zod.null()]).optional(),
+  "created_at": zod.iso.datetime({})
+})
+
+/**
+ * Proposer withdraws the edit request (open or awaiting approvals only).
+ * @summary Cancel Suggestion
+ */
+export const CancelSuggestionApiSuggestionsSuggestionIdCancelPostParams = zod.object({
+  "suggestion_id": zod.uuid()
+})
+
+export const CancelSuggestionApiSuggestionsSuggestionIdCancelPostHeader = zod.object({
+  "X-Org-Id": zod.union([zod.string(),zod.null()]).optional(),
+  "X-Team-Id": zod.union([zod.string(),zod.null()]).optional()
+})
+
+export const CancelSuggestionApiSuggestionsSuggestionIdCancelPostResponse = zod.object({
+  "id": zod.string(),
+  "post_id": zod.string(),
+  "package_id": zod.string(),
+  "proposer_team_id": zod.string(),
+  "target_team_id": zod.string(),
+  "original_text": zod.string(),
+  "adapted_preview": zod.union([zod.string(),zod.null()]).optional(),
+  "proposed_text": zod.union([zod.string(),zod.null()]).optional(),
+  "status": zod.string(),
+  "response": zod.union([zod.string(),zod.null()]).optional(),
+  "response_reason": zod.union([zod.string(),zod.null()]).optional(),
+  "target_node_id": zod.union([zod.string(),zod.null()]).optional(),
+  "target_node_version": zod.union([zod.number(),zod.null()]).optional(),
+  "suggestion_type": zod.union([zod.enum(['edit_text', 'add_detail', 'flag_incorrect', 'request_clarification', 'propose_alternative']),zod.null()]).optional(),
+  "approved_team_ids": zod.array(zod.string()).optional(),
+  "awaiting_team_ids": zod.array(zod.string()).optional(),
+  "applied_at": zod.union([zod.iso.datetime({}),zod.null()]).optional(),
   "created_at": zod.iso.datetime({})
 })
 
@@ -113,12 +189,16 @@ export const CloseSuggestionApiSuggestionsSuggestionIdClosePostResponse = zod.ob
   "target_team_id": zod.string(),
   "original_text": zod.string(),
   "adapted_preview": zod.union([zod.string(),zod.null()]).optional(),
+  "proposed_text": zod.union([zod.string(),zod.null()]).optional(),
   "status": zod.string(),
   "response": zod.union([zod.string(),zod.null()]).optional(),
   "response_reason": zod.union([zod.string(),zod.null()]).optional(),
   "target_node_id": zod.union([zod.string(),zod.null()]).optional(),
   "target_node_version": zod.union([zod.number(),zod.null()]).optional(),
   "suggestion_type": zod.union([zod.enum(['edit_text', 'add_detail', 'flag_incorrect', 'request_clarification', 'propose_alternative']),zod.null()]).optional(),
+  "approved_team_ids": zod.array(zod.string()).optional(),
+  "awaiting_team_ids": zod.array(zod.string()).optional(),
+  "applied_at": zod.union([zod.iso.datetime({}),zod.null()]).optional(),
   "created_at": zod.iso.datetime({})
 })
 

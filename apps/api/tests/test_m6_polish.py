@@ -105,6 +105,129 @@ def test_feed_sort_and_mark_read(client: TestClient) -> None:
         assert feed.status_code == 200, feed.text
 
 
+def test_channel_priority_sort_orders_p0_before_p2(client: TestClient) -> None:
+    """Channel feed sort=priority ranks by ai_priority (case-insensitive p0..p2)."""
+    import asyncio
+    from uuid import UUID
+
+    from src.channels import service as channels_service
+    from src.lib.database import async_session_factory
+
+    t = _team(client)
+    t2 = client.post(
+        f"/api/orgs/{t['org']}/teams",
+        json={"name": "Receiver"},
+        headers=_auth(t["token"], t["org"]),
+    ).json()["id"]
+    ch = client.post(
+        f"/api/orgs/{t['org']}/channels",
+        json={"team_a_id": t["team"], "team_b_id": t2},
+        headers=_auth(t["token"], t["org"], t["team"]),
+    )
+    assert ch.status_code == 201, ch.text
+    channel_id = ch.json()["id"]
+
+    pkg = client.post(
+        f"/api/teams/{t['team']}/packages",
+        json={
+            "title": "Priority fixture",
+            "body": "body",
+            "target_team_id": t2,
+            "bypass_incomplete_pipeline": True,
+        },
+        headers=_auth(t["token"], t["org"], t["team"]),
+    )
+    assert pkg.status_code == 201, pkg.text
+    package_id = pkg.json()["id"]
+
+    async def _seed() -> None:
+        async with async_session_factory() as session:
+            # Insert lower priority first so newest-only order would invert ranking
+            for pri, body in (
+                ("p2", "FYI — optional reading"),
+                ("p1", "Please review this week"),
+                ("p0", "BLOCKER — production outage response needed today"),
+            ):
+                await channels_service.create_post_with_rendition(
+                    session,
+                    org_id=UUID(t["org"]),
+                    channel_id=UUID(channel_id),
+                    package_id=UUID(package_id),
+                    original_body=body,
+                    adapted_body=body,
+                    what_was_done="fixture",
+                    priority=pri,
+                    priority_reason=f"fixture {pri}",
+                    bypassed_checks=[],
+                    fidelity=None,
+                    fit=None,
+                    confidence=None,
+                    badge=None,
+                    judge_payload={},
+                    topic_tags=[],
+                    attached_conflicts=[],
+                )
+            await session.commit()
+
+    asyncio.run(_seed())
+
+    newest = client.get(
+        f"/api/channels/{channel_id}/posts",
+        params={"sort": "newest"},
+        headers=_auth(t["token"], t["org"], t2),
+    )
+    assert newest.status_code == 200, newest.text
+    newest_page = newest.json()
+    assert newest_page["total"] == 3
+    assert newest_page["page_size"] == 10
+    assert {p["ai_priority"] for p in newest_page["items"]} == {"p0", "p1", "p2"}
+
+    by_pri = client.get(
+        f"/api/channels/{channel_id}/posts",
+        params={"sort": "priority"},
+        headers=_auth(t["token"], t["org"], t2),
+    )
+    assert by_pri.status_code == 200, by_pri.text
+    by_pri_page = by_pri.json()
+    pris = [p["ai_priority"] for p in by_pri_page["items"]]
+    assert pris == ["p0", "p1", "p2"], pris
+    assert by_pri_page["items"][0]["ai_priority_reason"] == "fixture p0"
+
+    hit = client.get(
+        f"/api/channels/{channel_id}/posts",
+        params={"q": "BLOCKER", "sort": "newest"},
+        headers=_auth(t["token"], t["org"], t2),
+    )
+    assert hit.status_code == 200, hit.text
+    hit_page = hit.json()
+    assert hit_page["total"] == 1
+    assert hit_page["items"][0]["ai_priority"] == "p0"
+    assert hit_page["items"][0]["search_score"] is not None
+
+    page1 = client.get(
+        f"/api/channels/{channel_id}/posts",
+        params={"sort": "priority", "page": 1, "page_size": 2},
+        headers=_auth(t["token"], t["org"], t2),
+    )
+    assert page1.status_code == 200, page1.text
+    p1 = page1.json()
+    assert p1["page"] == 1
+    assert p1["page_size"] == 2
+    assert p1["total"] == 3
+    assert p1["total_pages"] == 2
+    assert [p["ai_priority"] for p in p1["items"]] == ["p0", "p1"]
+
+    page2 = client.get(
+        f"/api/channels/{channel_id}/posts",
+        params={"sort": "priority", "page": 2, "page_size": 2},
+        headers=_auth(t["token"], t["org"], t2),
+    )
+    assert page2.status_code == 200, page2.text
+    p2 = page2.json()
+    assert p2["page"] == 2
+    assert [p["ai_priority"] for p in p2["items"]] == ["p2"]
+
+
 def test_profile_draft_stub_and_admin_metrics(client: TestClient) -> None:
     t = _team(client)
     upload = client.post(

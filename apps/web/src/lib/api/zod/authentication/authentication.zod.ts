@@ -8,12 +8,13 @@ import * as zod from 'zod';
 
 
 /**
- * Register with email/password and issue backend tokens.
+ * Register with email/password/username and issue backend tokens.
  * @summary Register
  */
 export const RegisterApiAuthRegisterPostBody = zod.object({
   "email": zod.string(),
   "password": zod.string(),
+  "username": zod.string(),
   "name": zod.union([zod.string(),zod.null()]).optional()
 }).describe('Email\/password registration request.')
 
@@ -93,6 +94,7 @@ export const getMeApiAuthMeGetResponseEmailVerifiedDefault = false;
 export const GetMeApiAuthMeGetResponse = zod.object({
   "id": zod.string(),
   "email": zod.string(),
+  "username": zod.union([zod.string(),zod.null()]).optional(),
   "name": zod.union([zod.string(),zod.null()]).optional(),
   "image": zod.union([zod.string(),zod.null()]).optional(),
   "email_verified": zod.boolean().default(getMeApiAuthMeGetResponseEmailVerifiedDefault),

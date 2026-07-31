@@ -200,18 +200,29 @@ async def promote_decision_claims(
     return created
 
 
-async def list_decisions(
-    db: AsyncSession, *, org_id: UUID, team_id: UUID, status_filter: str | None = None
+def _apply_status_filter(stmt, status_filter: str | None):
+    if not status_filter or status_filter == "all":
+        return stmt
+    if status_filter == "contested":
+        return stmt.where(Decision.status == "contested")
+    if status_filter == "open":
+        # UI "Open" = proposed/open (not agreed/superseded/contested)
+        return stmt.where(Decision.status.in_(("open", "proposed")))
+    return stmt.where(Decision.status == status_filter)
+
+
+async def _decision_responses(
+    db: AsyncSession, rows: list[Decision]
 ) -> list[DecisionResponse]:
-    stmt = select(Decision).where(Decision.org_id == org_id, Decision.team_id == team_id)  # noqa: E501
-    if status_filter and status_filter != "all":
-        if status_filter == "contested":
-            stmt = stmt.where(Decision.status == "contested")
-        elif status_filter == "open":
-            stmt = stmt.where(Decision.status == "open")
-        else:
-            stmt = stmt.where(Decision.status == status_filter)
-    rows = (await db.execute(stmt.order_by(Decision.created_at.desc()))).scalars().all()
+    from src.tenancy.models import Team
+
+    owner_ids = {d.owner_team_id for d in rows if d.owner_team_id is not None}
+    names: dict[UUID, str] = {}
+    if owner_ids:
+        teams = (
+            await db.execute(select(Team).where(Team.id.in_(owner_ids)))
+        ).scalars().all()
+        names = {t.id: t.name for t in teams}
     return [
         DecisionResponse(
             id=str(d.id),
@@ -222,7 +233,83 @@ async def list_decisions(
             source=d.source,
             status=d.status,
             owner_team_id=str(d.owner_team_id) if d.owner_team_id else None,
+            owner_team_name=names.get(d.owner_team_id) if d.owner_team_id else None,
+            channel_id=str(d.channel_id) if d.channel_id else None,
+            superseded_by=str(d.superseded_by) if d.superseded_by else None,
             created_at=d.created_at,
         )
         for d in rows
     ]
+
+
+async def list_decisions(
+    db: AsyncSession, *, org_id: UUID, team_id: UUID, status_filter: str | None = None
+) -> list[DecisionResponse]:
+    stmt = select(Decision).where(Decision.org_id == org_id, Decision.team_id == team_id)  # noqa: E501
+    stmt = _apply_status_filter(stmt, status_filter)
+    rows = list(
+        (await db.execute(stmt.order_by(Decision.created_at.desc()))).scalars().all()
+    )
+    return await _decision_responses(db, rows)
+
+
+async def list_channel_decisions(
+    db: AsyncSession,
+    *,
+    org_id: UUID,
+    team_id: UUID,
+    channel_id: UUID,
+    status_filter: str | None = None,
+) -> list[DecisionResponse]:
+    """FR-6.2 — Decision Register per channel (interaction pair)."""
+    from sqlalchemy import or_
+
+    from src.channels.models import Channel
+
+    channel = await db.get(Channel, channel_id)
+    if channel is None or channel.org_id != org_id:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Channel not found")  # noqa: E501
+    if team_id not in (channel.team_a_id, channel.team_b_id):
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Channel not found")  # noqa: E501
+
+    # Channel-scoped rows + still-unscoped decisions owned by either team in the pair.
+    stmt = select(Decision).where(
+        Decision.org_id == org_id,
+        or_(
+            Decision.channel_id == channel_id,
+            (
+                Decision.channel_id.is_(None)
+                & Decision.team_id.in_((channel.team_a_id, channel.team_b_id))
+            ),
+        ),
+    )
+    stmt = _apply_status_filter(stmt, status_filter)
+    rows = list(
+        (await db.execute(stmt.order_by(Decision.created_at.desc()))).scalars().all()
+    )
+    return await _decision_responses(db, rows)
+
+
+async def attach_decisions_to_channel(
+    db: AsyncSession,
+    *,
+    org_id: UUID,
+    team_id: UUID,
+    channel_id: UUID,
+) -> int:
+    """Bind sender-team unscoped decisions to the interaction being handed off."""
+    rows = (
+        await db.execute(
+            select(Decision).where(
+                Decision.org_id == org_id,
+                Decision.team_id == team_id,
+                Decision.channel_id.is_(None),
+                Decision.status.in_(("open", "proposed", "contested")),
+            )
+        )
+    ).scalars().all()
+    for d in rows:
+        d.channel_id = channel_id
+    if rows:
+        await db.flush()
+    return len(rows)

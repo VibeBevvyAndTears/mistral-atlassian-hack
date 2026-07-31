@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>PRD v0.4 — Cross-Team Communication Platform</title>
+<title>PRD v0.5 — Cross-Team Communication Platform</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600&display=swap" rel="stylesheet">
@@ -240,6 +240,100 @@ td.pri{font-family:var(--mono);font-size:11.5px;font-weight:600;text-align:cente
 }
 .axiom p{margin:0;font-size:19px;line-height:1.45;font-weight:500}
 
+/* ---------- who-processes flow ---------- */
+.flow-wrap{max-width:none;margin:0 0 28px}
+.flow{
+  background:var(--surface);border:1px solid var(--rule);border-radius:3px;
+  padding:18px 16px 14px;overflow-x:auto;
+}
+.flow-legend{
+  display:flex;flex-wrap:wrap;gap:14px 22px;margin:0 0 16px;
+  font-family:var(--mono);font-size:10.5px;color:var(--ink-2);
+}
+.flow-legend span{display:inline-flex;align-items:center;gap:7px}
+.flow-legend i{
+  width:10px;height:10px;border-radius:2px;display:inline-block;
+}
+.flow-legend .i-hum{background:var(--human)}
+.flow-legend .i-ai{background:var(--agent)}
+.flow-legend .i-prof{background:var(--ink);opacity:.55}
+.flow-legend .i-con{background:var(--conflict)}
+
+.flow-phase{
+  margin:0 0 14px;padding:12px 12px 10px;
+  border:1px solid var(--rule-soft);border-radius:3px;background:#F7F8FB;
+}
+.flow-phase > header{
+  display:flex;align-items:baseline;justify-content:space-between;gap:12px;
+  margin:0 0 10px;flex-wrap:wrap;
+}
+.flow-phase > header .ph{
+  font-family:var(--mono);font-size:10px;font-weight:600;
+  letter-spacing:.11em;text-transform:uppercase;color:var(--ink-3);
+}
+.flow-phase > header .ttl{
+  font-family:var(--display);font-size:13.5px;font-weight:600;color:var(--ink);
+}
+
+.flow-row{
+  display:flex;align-items:stretch;gap:8px;flex-wrap:nowrap;
+  min-width:720px;
+}
+.flow-step{
+  flex:1 1 0;min-width:0;
+  background:var(--surface);border:1px solid var(--rule);border-radius:3px;
+  padding:10px 10px 9px;display:flex;flex-direction:column;gap:6px;
+}
+.flow-step.hum{border-left:3px solid var(--human)}
+.flow-step.ai{border-left:3px solid var(--agent)}
+.flow-step.prof{border-left:3px solid #59616F}
+.flow-step.con{border-left:3px solid var(--conflict)}
+.flow-step .who{
+  font-family:var(--mono);font-size:9.5px;font-weight:600;
+  letter-spacing:.08em;text-transform:uppercase;
+}
+.flow-step.hum .who{color:var(--human)}
+.flow-step.ai .who{color:var(--agent)}
+.flow-step.prof .who{color:var(--ink-2)}
+.flow-step.con .who{color:var(--conflict)}
+.flow-step .act{
+  font-family:var(--display);font-size:12.5px;font-weight:600;
+  color:var(--ink);line-height:1.3;
+}
+.flow-step .det{
+  font-family:var(--mono);font-size:10px;color:var(--ink-3);line-height:1.45;
+}
+.flow-arrow{
+  flex:0 0 18px;align-self:center;
+  font-family:var(--mono);font-size:14px;color:var(--ink-3);
+  text-align:center;line-height:1;
+}
+.flow-note-line{
+  margin:2px 0 0;font-family:var(--mono);font-size:10.5px;color:var(--ink-3);
+  letter-spacing:.02em;
+}
+.flow-bridge{
+  display:flex;align-items:center;justify-content:center;gap:10px;
+  margin:-2px 0 12px;min-width:720px;
+}
+.flow-bridge .pill{
+  font-family:var(--mono);font-size:10px;font-weight:600;
+  letter-spacing:.06em;text-transform:uppercase;
+  padding:4px 10px;border-radius:2px;
+  background:#EBEEF3;color:var(--ink-2);border:1px solid var(--rule);
+}
+.flow-bridge .pill.prof{
+  background:#F0F1F4;border-color:#A8B0BE;color:var(--ink);
+}
+.flow-bridge .line{
+  flex:1 1 auto;height:1px;background:var(--rule-soft);
+}
+
+@media (max-width:720px){
+  .flow-row,.flow-bridge{min-width:0;flex-wrap:wrap}
+  .flow-arrow{flex:0 0 100%;transform:rotate(90deg);height:14px}
+}
+
 /* ---------- wireframes ---------- */
 .wf-wrap{max-width:none;margin:0 0 54px}
 .wf-head{max-width:var(--measure);margin-bottom:14px}
@@ -252,8 +346,9 @@ td.pri{font-family:var(--mono);font-size:11.5px;font-weight:600;text-align:cente
 
 .wf{
   background:var(--surface);border:1px solid var(--rule);border-radius:3px;
-  padding:0;overflow:hidden;max-width:1080px;
+  padding:0;overflow:hidden;max-width:1080px;position:relative;
 }
+.wf.has-toast{overflow:visible}
 .wf-chrome{
   display:flex;align-items:center;gap:7px;
   padding:9px 13px;border-bottom:1px solid var(--rule-soft);background:#F3F5F9;
@@ -262,6 +357,42 @@ td.pri{font-family:var(--mono);font-size:11.5px;font-weight:600;text-align:cente
 .wf-url{
   font-family:var(--mono);font-size:10.5px;color:var(--ink-3);margin-left:8px;
 }
+.wf-chrome-actions{margin-left:auto;display:flex;align-items:center;gap:8px}
+.wf-bell{
+  position:relative;display:inline-flex;align-items:center;justify-content:center;
+  width:22px;height:22px;border:1px solid var(--rule);border-radius:2px;
+  background:var(--surface);color:var(--ink-2);font-size:11px;line-height:1;
+}
+.wf-bell .badge{
+  position:absolute;top:-5px;right:-5px;
+  font-family:var(--mono);font-size:8px;font-weight:600;
+  background:var(--conflict);color:#fff;border-radius:8px;padding:0 4px;min-width:12px;text-align:center;
+}
+.wf-info{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:16px;height:16px;border-radius:50%;
+  border:1px solid var(--agent);background:var(--agent-wash);color:var(--agent);
+  font-family:var(--mono);font-size:9px;font-weight:700;cursor:help;line-height:1;
+}
+.wf-info-pop{
+  position:relative;display:inline-flex;align-items:center;
+}
+.wf-info-pop .tip{
+  display:none;position:absolute;top:calc(100% + 6px);left:50%;transform:translateX(-50%);
+  z-index:5;width:220px;padding:8px 10px;
+  background:var(--surface);border:1px solid var(--rule);border-radius:3px;
+  box-shadow:0 4px 14px rgba(20,24,36,.08);
+  font-family:var(--mono);font-size:9.5px;color:var(--ink-2);letter-spacing:.03em;line-height:1.55;
+  white-space:normal;
+}
+.wf-info-pop:hover .tip,.wf-info-pop:focus-within .tip{display:block}
+.wf-toast{
+  position:absolute;right:14px;bottom:14px;z-index:6;width:240px;
+  border:1px solid var(--rule-soft);border-left:3px solid var(--conflict);
+  border-radius:3px;background:var(--surface);padding:10px 12px;
+  box-shadow:0 8px 24px rgba(20,24,36,.12);
+}
+.wf-toast .wf-row{margin-bottom:0}
 .wf-body{display:flex;min-height:300px}
 
 .wf-rail{
@@ -410,9 +541,9 @@ td.pri{font-family:var(--mono);font-size:11.5px;font-weight:600;text-align:cente
   <div class="masthead-in">
     <h1>Cross-Team Communication Platform</h1>
     <span class="sub">Product requirements</span>
-    <span class="chip v">Draft v0.4</span>
+    <span class="chip v">Draft v0.5</span>
     <span class="chip">Owner: Ryu</span>
-    <span class="chip">31 Jul 2026</span>
+    <span class="chip">1 Aug 2026</span>
   </div>
 </header>
 
@@ -431,7 +562,14 @@ td.pri{font-family:var(--mono);font-size:11.5px;font-weight:600;text-align:cente
     </li>
     <li><a href="#s2"><span class="num">2</span>Roles &amp; ownership</a></li>
     <li><a href="#s3"><span class="num">3</span>Concepts</a></li>
-    <li><a href="#s4"><span class="num">4</span>User flows</a></li>
+    <li><a href="#s4"><span class="num">4</span>User flows</a>
+      <ul class="kids">
+        <li><a href="#s4-1">Who processes what</a></li>
+        <li><a href="#s4-2">Authoring &amp; ingestion</a></li>
+        <li><a href="#s4-3">Sending</a></li>
+        <li><a href="#s4-4">Receiving &amp; review</a></li>
+      </ul>
+    </li>
     <li><a href="#s5"><span class="num">5</span>Wireframes</a>
       <ul class="kids">
         <li><a href="#w1">Team profile</a></li>
@@ -501,7 +639,7 @@ td.pri{font-family:var(--mono);font-size:11.5px;font-weight:600;text-align:cente
     <li>New documents are <strong>linked into the existing graph</strong>; contradictions are flagged for human review, never silently merged.</li>
     <li>At send time, content is checked against the <strong>receiving team's</strong> graph — catching cross-team decision conflicts before the handoff.</li>
     <li>Delivered content is <strong>adapted</strong> to the receiving team's profile, with the original always one click away.</li>
-    <li>The receiver reviews it <strong>like a code review</strong> — inline suggestions anchored to specific nodes, which the sender accepts, edits, or rejects, updating the actual graph.</li>
+    <li>The receiver reviews it <strong>like a code review</strong> — inline suggestions anchored to specific nodes. The owning team Lead proposes Accept/Edit (or Rejects); <strong>both teams must approve</strong> before the graph updates. The proposing team may cancel before apply.</li>
     <li>Every generated rendition passes a <strong>Rendition Judge</strong> before a reader sees it — because adaptation is the one place in the pipeline where no human is checking the AI's work.</li>
   </ol>
 
@@ -511,8 +649,8 @@ td.pri{font-family:var(--mono);font-size:11.5px;font-weight:600;text-align:cente
     <tbody>
       <tr><td><strong>Make sense of information</strong></td><td>Documents become a navigable topic graph; each post carries its source topic as a tag so the receiver can filter and sort by it; content re-expressed at the reader's level; AI priority sorting surfaces what matters; provenance from every claim back to its source span</td></tr>
       <tr><td><strong>Present ideas</strong></td><td>Bidirectional adaptation renders one idea differently per audience; sender preview shows how it will land; reader-controlled detail depth; the judge scores whether it actually suits the target</td></tr>
-      <tr><td><strong>Align on decisions</strong></td><td>Decisions are first-class typed objects with status and owner; Decision Register per channel; cross-team conflict detection catches collisions pre-handoff; conflicts can never be silently merged</td></tr>
-      <tr><td><strong>Review work effectively</strong></td><td>Pre-send internal review queue; code-review-style suggestions that write back into the graph on acceptance; explicit review outcomes; full history with agent attribution</td></tr>
+      <tr><td><strong>Align on decisions</strong></td><td>Decisions are first-class typed objects with status and owner; Decision Register per interaction (switch Eng↔Mkt / Eng↔Design); Summary under the list; cross-team conflict detection catches collisions pre-handoff; unowned decisions hard-block Send; conflicts can never be silently merged</td></tr>
+      <tr><td><strong>Review work effectively</strong></td><td>Pre-send internal review queue; code-review-style suggestions with dual-team approval before graph write-back; proposer cancel; explicit review outcomes; full history with agent attribution</td></tr>
     </tbody>
   </table></div>
 
@@ -546,18 +684,18 @@ td.pri{font-family:var(--mono);font-size:11.5px;font-weight:600;text-align:cente
     <thead><tr><th>Role</th><th>Scope</th><th>Can</th></tr></thead>
     <tbody>
       <tr><td><strong>Org Owner / Admin</strong></td><td>Organization</td><td>Create org, create and archive teams, manage members</td></tr>
-      <tr><td><strong>Team Lead</strong></td><td>Team</td><td>Edit team profile, invite and remove members, approve conflict resolutions, send packages, accept or reject incoming suggestions</td></tr>
-      <tr><td><strong>Team Member</strong></td><td>Team</td><td>Upload and write documents, edit nodes, propose resolutions, comment, review, propose suggestions</td></tr>
-      <tr><td><strong>Outside viewer</strong></td><td>Any other team in the org</td><td>Read-only on nodes and graphs; may comment and propose suggestions in shared channels</td></tr>
+      <tr><td><strong>Team Lead</strong></td><td>Team</td><td>Edit team profile, invite and remove members, approve conflict resolutions, send packages, Accept / Edit / Reject incoming suggestions (stages a dual-approve proposal)</td></tr>
+      <tr><td><strong>Team Member</strong></td><td>Team</td><td>Upload and write documents, edit nodes, propose resolutions, comment, review, propose suggestions, approve staged suggestion changes for their team, cancel their team's open suggestions</td></tr>
+      <tr><td><strong>Outside viewer</strong></td><td>Any other team in the org</td><td>Read-only on nodes and graphs; may comment and propose suggestions in shared channels; may cancel their own team's suggestions before apply; may approve when their team is a party to dual approval</td></tr>
     </tbody>
   </table></div>
   <div class="note human">
     <span class="tag">Ownership rule — D-1</span>
-    <p>Every node belongs to exactly one team's space. Members of the owning team can edit. Everyone outside has read-only access. Nodes are never copied between teams. Outside teams influence a graph only by <strong>proposing</strong> changes the owning team accepts.</p>
+    <p>Every node belongs to exactly one team's space. Members of the owning team can edit. Everyone outside has read-only access. Nodes are never copied between teams. Outside teams influence a graph only by <strong>proposing</strong> changes that pass the dual-approve gate (D-18).</p>
   </div>
   <div class="note human">
-    <span class="tag">Approval rule — D-13</span>
-    <p>Resolving a conflict (§5.3) and accepting/rejecting a suggestion (§5.8) are <strong>Team Lead</strong> actions. Members can raise conflicts, propose resolutions, and propose suggestions, but only the Lead finalizes them — matching the table above.</p>
+    <span class="tag">Approval rule — D-13 / D-18</span>
+    <p>Resolving a conflict (§5.3) and Accept / Edit / Reject on a suggestion (§5.8) are <strong>Team Lead</strong> actions. Accept/Edit <strong>stages</strong> a proposed text and records the owning team's approval — it does <strong>not</strong> write the graph yet. The graph updates only when <strong>both</strong> the proposing team and the owning team have approved (D-18). The proposing team may <strong>cancel</strong> while the suggestion is still open or awaiting approvals (D-19).</p>
   </div>
 </section>
 
@@ -572,10 +710,10 @@ td.pri{font-family:var(--mono);font-size:11.5px;font-weight:600;text-align:cente
       <tr><td><strong>Node</strong></td><td>A topic. Short keyword label, type, and a set of claims. Non-leaf nodes group sub-topics; leaf nodes hold detail. Owned by exactly one team.</td></tr>
       <tr><td><strong>Topic tag</strong></td><td>A node's label, surfaced on the post(s) built from it. The graph itself stays invisible (§5); this is the one piece of decomposition that's user-facing — shown on every post and used to filter and sort the channel feed.</td></tr>
       <tr><td><strong>Claim</strong></td><td>An atomic typed statement — <code>fact</code>, <code>decision</code>, <code>constraint</code>, <code>requirement</code>, <code>metric</code>, <code>date</code>, <code>owner</code>. The unit conflict detection compares. Carries provenance to a span in a source document.</td></tr>
-      <tr><td><strong>Decision</strong></td><td>A claim of type <code>decision</code> promoted to a first-class object with status, owner, and affected teams.</td></tr>
+      <tr><td><strong>Decision</strong></td><td>A claim of type <code>decision</code> promoted to a first-class object with status, owner, channel/interaction scope, and superseded linkage. An unowned decision blocks Send.</td></tr>
       <tr><td><strong>Edge</strong></td><td>Typed relation: <code>child_of</code>, <code>relates_to</code>, <code>depends_on</code>, <code>refines</code>, <code>supersedes</code>, <code>conflicts_with</code>.</td></tr>
       <tr><td><strong>Conflict</strong></td><td>Two claims on the same topic that cannot both be true. Internal (within one graph) or cross-team. Never auto-merged.</td></tr>
-      <tr><td><strong>Review Suggestion</strong></td><td>A proposed change from the receiving team to a specific node or claim in the sender's graph — code-review style.</td></tr>
+      <tr><td><strong>Review Suggestion</strong></td><td>A proposed change from the receiving team to a specific node or claim in the sender's graph — code-review style. Lifecycle: <code>open</code> → Lead Accept/Edit → <code>awaiting_approvals</code> → both teams approve → <code>applied</code> (or Reject / Cancel).</td></tr>
       <tr><td><strong>Package</strong></td><td>A curated set of documents and nodes sent from Team A to Team B in one action.</td></tr>
       <tr><td><strong>Rendition</strong></td><td>A generated adaptation of content for a specific team profile version. Cached and versioned.</td></tr>
       <tr><td><strong>Rendition Judge</strong></td><td>The single runtime judge. Scores every rendition on fidelity and audience fit, returning a structured verdict with evidence.</td></tr>
@@ -588,7 +726,189 @@ td.pri{font-family:var(--mono);font-size:11.5px;font-weight:600;text-align:cente
   <h2><span class="n">04</span>User flows</h2>
   <div class="rule"></div>
 
-  <h3>4.2 Authoring and ingestion — sender side</h3>
+  <h3 id="s4-1">4.1 Who processes what</h3>
+  <p>Every stage has exactly one kind of actor: a <strong>human</strong> (Team Lead or Member), an <strong>agent</strong>, or a <strong>deterministic service</strong>. Adaptation and reverse adaptation are driven by the <strong>team profiles</strong> of both sides — never by a per-user preference (D-3, D-11). The diagram below is the authority for “who does this step.”</p>
+
+  <div class="flow-wrap">
+    <div class="flow" role="img" aria-label="Who processes what across authoring, send, receive, and suggestion resolution">
+      <div class="flow-legend">
+        <span><i class="i-hum"></i> Human gate</span>
+        <span><i class="i-ai"></i> AI agent</span>
+        <span><i class="i-prof"></i> Team profile input</span>
+        <span><i class="i-con"></i> Conflict / blocking</span>
+      </div>
+
+      <!-- Phase A -->
+      <div class="flow-phase">
+        <header>
+          <span class="ph">Phase A · Author</span>
+          <span class="ttl">Team A builds its own graph</span>
+        </header>
+        <div class="flow-row">
+          <div class="flow-step hum">
+            <span class="who">Team A · Member</span>
+            <span class="act">Upload / write</span>
+            <span class="det">Source documents enter Team A only</span>
+          </div>
+          <div class="flow-arrow" aria-hidden="true">→</div>
+          <div class="flow-step ai">
+            <span class="who">Service + agents</span>
+            <span class="act">Ingest → decompose → extract → link</span>
+            <span class="det">Intra-team Conflict Agent may fire</span>
+          </div>
+          <div class="flow-arrow" aria-hidden="true">→</div>
+          <div class="flow-step hum">
+            <span class="who">Team A · Lead</span>
+            <span class="act">Resolve review queue</span>
+            <span class="det">Accept / edit / reject / keep both — never auto-merge</span>
+          </div>
+          <div class="flow-arrow" aria-hidden="true">→</div>
+          <div class="flow-step prof">
+            <span class="who">Team A profile</span>
+            <span class="act">Audience model maintained</span>
+            <span class="det">language · translation_style · jargon · tone</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="flow-bridge">
+        <div class="line"></div>
+        <span class="pill">handoff</span>
+        <div class="line"></div>
+      </div>
+
+      <!-- Phase B -->
+      <div class="flow-phase">
+        <header>
+          <span class="ph">Phase B · Send</span>
+          <span class="ttl">Package leaves Team A for Team B</span>
+        </header>
+        <div class="flow-row">
+          <div class="flow-step hum">
+            <span class="who">Team A · Lead</span>
+            <span class="act">Compose &amp; send</span>
+            <span class="det">Pick nodes · choose Team B · checklist</span>
+          </div>
+          <div class="flow-arrow" aria-hidden="true">→</div>
+          <div class="flow-step con">
+            <span class="who">Conflict Agent</span>
+            <span class="act">Cross-team scan</span>
+            <span class="det">Reads Team B graph · surfaces matched claims only</span>
+          </div>
+          <div class="flow-arrow" aria-hidden="true">→</div>
+          <div class="flow-step hum">
+            <span class="who">Team A · Lead</span>
+            <span class="act">Revise or acknowledge</span>
+            <span class="det">Conflicts travel with the package if kept</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="flow-bridge">
+        <div class="line"></div>
+        <span class="pill prof">both team profiles → Adaptation</span>
+        <div class="line"></div>
+      </div>
+
+      <!-- Phase C -->
+      <div class="flow-phase">
+        <header>
+          <span class="ph">Phase C · Adapt</span>
+          <span class="ttl">Translation / jargon adaptation — per team, not per user</span>
+        </header>
+        <div class="flow-row">
+          <div class="flow-step prof">
+            <span class="who">Source profile</span>
+            <span class="act">Team A profile vN</span>
+            <span class="det">How the sender speaks</span>
+          </div>
+          <div class="flow-arrow" aria-hidden="true">+</div>
+          <div class="flow-step prof">
+            <span class="who">Target profile</span>
+            <span class="act">Team B profile vM</span>
+            <span class="det">preferred_language · translation_style</span>
+          </div>
+          <div class="flow-arrow" aria-hidden="true">→</div>
+          <div class="flow-step ai">
+            <span class="who">Adaptation Agent</span>
+            <span class="act">Render for Team B</span>
+            <span class="det">Literal translate and/or jargon adapt (D-11)</span>
+          </div>
+          <div class="flow-arrow" aria-hidden="true">→</div>
+          <div class="flow-step ai">
+            <span class="who">Rendition Judge</span>
+            <span class="act">Fidelity + audience fit</span>
+            <span class="det">Only automated gate with no human after it</span>
+          </div>
+          <div class="flow-arrow" aria-hidden="true">→</div>
+          <div class="flow-step ai">
+            <span class="who">Prioritization</span>
+            <span class="act">Score the post</span>
+            <span class="det">Uses Team B responsibilities</span>
+          </div>
+        </div>
+        <p class="flow-note-line">One cached rendition per content version × target profile version. Original always one click away.</p>
+      </div>
+
+      <div class="flow-bridge">
+        <div class="line"></div>
+        <span class="pill">A↔B channel</span>
+        <div class="line"></div>
+      </div>
+
+      <!-- Phase D -->
+      <div class="flow-phase">
+        <header>
+          <span class="ph">Phase D · Review loop</span>
+          <span class="ttl">Receiver proposes; both teams approve; then apply</span>
+        </header>
+        <div class="flow-row">
+          <div class="flow-step hum">
+            <span class="who">Team B · Member</span>
+            <span class="act">Read adapted post</span>
+            <span class="det">Comment · suggest · Agree / Changes / Blocked · cancel</span>
+          </div>
+          <div class="flow-arrow" aria-hidden="true">→</div>
+          <div class="flow-step ai">
+            <span class="who">Reverse Adaptation</span>
+            <span class="act">Suggestion → Team A voice</span>
+            <span class="det">Same agent inverted · profiles swapped</span>
+          </div>
+          <div class="flow-arrow" aria-hidden="true">→</div>
+          <div class="flow-step ai">
+            <span class="who">Rendition Judge</span>
+            <span class="act">Score reverse rendition</span>
+            <span class="det">Same fidelity + fit rubric</span>
+          </div>
+          <div class="flow-arrow" aria-hidden="true">→</div>
+          <div class="flow-step hum">
+            <span class="who">Team A · Lead</span>
+            <span class="act">Accept / edit / reject</span>
+            <span class="det">Stages proposed text · A approval recorded (D-13)</span>
+          </div>
+          <div class="flow-arrow" aria-hidden="true">→</div>
+          <div class="flow-step hum">
+            <span class="who">Both teams</span>
+            <span class="act">Dual approve</span>
+            <span class="det">Apply only when A and B approve (D-18)</span>
+          </div>
+          <div class="flow-arrow" aria-hidden="true">→</div>
+          <div class="flow-step hum">
+            <span class="who">Team B · Member</span>
+            <span class="act">Mark resolved</span>
+            <span class="det">Close after applied · or cancel earlier</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="note agent">
+    <span class="tag">Translation ownership — D-3 / D-11</span>
+    <p>The Adaptation Agent is the only actor that rewrites language. It takes <code>source_team_profile</code> + <code>target_team_profile</code> (including <code>preferred_language</code> and <code>translation_style</code>) and produces one team-level rendition. Individual members do not get personal translations.</p>
+  </div>
+
+  <h3 id="s4-2">4.2 Authoring and ingestion — sender side</h3>
 <pre><code>Upload file(s) or write text
   → Ingestion (parse, OCR if needed, chunk, keep offsets)
   → Decomposition Agent → topic tree
@@ -603,11 +923,11 @@ td.pri{font-family:var(--mono);font-size:11.5px;font-weight:600;text-align:cente
     <p>Conflicting claims are never auto-merged. The node stays intact; a Review Item is created.</p>
   </div>
 
-  <h3>4.3 Sending</h3>
+  <h3 id="s4-3">4.3 Sending</h3>
 <pre><code>Select documents/nodes → choose receiving team → optional cover note
   → Pre-send checklist (deterministic):
        · unresolved internal review items in scope
-       · decisions without an owner
+       · decisions without an owner  ← hard-blocks Send (FR-9.5)
        · dangling references to nodes not included
        · terms flagged as unknown to the receiving team's profile
   → CROSS-TEAM conflict scan against the receiving team's graph
@@ -621,7 +941,7 @@ td.pri{font-family:var(--mono);font-size:11.5px;font-weight:600;text-align:cente
     <p>No node ownership changes and nothing is copied. The agent reads across graphs; the graphs stay separate.</p>
   </div>
 
-  <h3>4.4 Receiving and review — the code-review model</h3>
+  <h3 id="s4-4">4.4 Receiving and review — the code-review model</h3>
 <pre><code>Team B opens channel → post adapted to Team B's profile
   → toggle "View original"; cross-team conflicts shown prominently
   → ••• menu → View source (which document(s) this came from) / History (right-hand sidebar, no graph UI)
@@ -633,13 +953,20 @@ td.pri{font-family:var(--mono);font-size:11.5px;font-weight:600;text-align:cente
             - Reverse Adaptation Agent renders it into Team A's profile
             - [Rendition Judge] scores the reverse rendition too
        · post-level action: Agree / Request Changes / Blocked
+       · cancel their own suggestion while open or awaiting approvals (D-19)
 
-  → Team A sees suggestions as a review queue against their graph
-       · Accept → applies edit, new node version, history entry
-       · Edit   → counter-proposal back to Team B
-       · Reject → reason required, visible to Team B
+  → Team A Lead sees suggestions as a review queue against their graph
+       · Accept → stages proposed text + records Team A approval (status=awaiting_approvals)
+       · Edit   → stages counter-proposal text + records Team A approval
+       · Reject → reason required, visible to Team B (terminal; no dual approve)
+       · Graph is NOT updated yet
 
-  → Team B marks the thread Resolved or Still Open
+  → Dual approve (D-18):
+       · Either party POST /approve until both proposing team and owning team approved
+       · Then apply: new node version, history entry, regen, notify
+       · Team B may still cancel before the second approval lands
+
+  → After applied (or rejected): Team B marks the thread closed
   → Node change triggers notification back to Team B</code></pre>
 </section>
 
@@ -817,14 +1144,14 @@ td.pri{font-family:var(--mono);font-size:11.5px;font-weight:600;text-align:cente
           <div class="wf-card">
             <p class="wf-lbl">Pre-send checklist</p>
             <div class="wf-row tight"><span class="tag tag-hum">pass</span><span class="wf-s">No unresolved internal review items</span></div>
-            <div class="wf-row tight"><span class="tag tag-con">fail</span><span class="wf-s">2 decisions have no owner</span></div>
+            <div class="wf-row tight"><span class="tag tag-con">fail</span><span class="wf-s">2 decisions have no owner — Send blocked</span></div>
             <div class="wf-row tight"><span class="tag tag-con">fail</span><span class="wf-s">4 terms unknown to Marketing's profile</span></div>
             <div class="wf-row tight"><span class="tag tag-hum">pass</span><span class="wf-s">No dangling references</span></div>
           </div>
 
           <div class="wf-row" style="margin-top:14px">
             <span class="wf-btn ai">Preview as Marketing</span>
-            <span class="wf-btn prime">Send package</span>
+            <span class="wf-btn" style="opacity:.45" title="Blocked until every decision has an owner">Send package</span>
           </div>
         </div>
         <div class="wf-side">
@@ -845,6 +1172,7 @@ td.pri{font-family:var(--mono);font-size:11.5px;font-weight:600;text-align:cente
     </div>
     <div class="anno"><ul>
       <li><span class="k">→</span>The checklist is deterministic — SQL, not a model. It was a judge in v0.3 and got demoted.</li>
+      <li><span class="k">→</span>Unowned decisions are a hard stop: Send stays disabled until every in-scope decision has an <code>owner_team_id</code> (FR-9.5). Other failures can still be fixed or knowingly acknowledged per FR-9.3.</li>
       <li><span class="k">→</span>The cross-team conflict card shows only the single colliding claim from Marketing's graph, never surrounding context (§7.6 guardrail).</li>
       <li><span class="k">→</span>Sender can proceed over a conflict; it travels attached to the post so both teams see it (FR-5.10).</li>
       <li><span class="k">→</span>Each included node's label becomes a topic tag on the resulting post, automatically — nothing to set here (FR-14.7).</li>
@@ -855,10 +1183,13 @@ td.pri{font-family:var(--mono);font-size:11.5px;font-weight:600;text-align:cente
   <div class="wf-wrap" id="w5">
     <div class="wf-head">
       <h3>5.5 Channel feed — receiver</h3>
-      <p class="wf-meta">Teams-like shell. Priority sorting, seen state, adapted bodies, topic tag filter. <b>FR-10.1 – FR-10.5, FR-14.1 – FR-14.8</b></p>
+      <p class="wf-meta">Teams-like shell. Priority sorting, seen state, adapted bodies, topic tag filter. No right-rail chrome — open items and priority explain live in notifications / an AI info affordance. <b>FR-8.5, FR-10.1 – FR-10.5, FR-14.1 – FR-14.8</b></p>
     </div>
-    <div class="wf">
-      <div class="wf-chrome"><span class="wf-dot"></span><span class="wf-dot"></span><span class="wf-dot"></span><span class="wf-url">/channels/engineering-marketing</span></div>
+    <div class="wf has-toast">
+        <div class="wf-chrome-actions">
+          <span class="wf-bell" title="Notifications — open on you">N<span class="badge">1</span></span>
+        </div>
+      </div>
       <div class="wf-body">
         <div class="wf-rail">
           <p class="wf-lbl">Your teams</p>
@@ -875,6 +1206,10 @@ td.pri{font-family:var(--mono);font-size:11.5px;font-weight:600;text-align:cente
           <div class="wf-row">
             <span class="wf-t">Engineering ↔ Marketing</span>
             <span class="wf-toggle" style="margin-left:auto"><span class="on">Priority</span><span>Newest</span><span>Oldest</span></span>
+            <span class="wf-info-pop" tabindex="0">
+              <span class="wf-info" title="Why this order">AI</span>
+              <span class="tip"><span class="tag tag-ai">AI priority</span><br>Deadline proximity · overlap with your responsibilities · attached conflict · unanswered questions</span>
+            </span>
             <span class="wf-btn">Unread only</span>
           </div>
           <div class="wf-row tight">
@@ -907,21 +1242,20 @@ td.pri{font-family:var(--mono);font-size:11.5px;font-weight:600;text-align:cente
             <div class="wf-row tight" style="margin-top:9px"><span class="tag tag-topic">Rollout</span><span class="tag tag-ghost">seen</span><span class="tag tag-hum">acknowledged</span></div>
           </div>
         </div>
-        <div class="wf-side">
-          <p class="wf-lbl">Why this order</p>
-          <div class="wf-card">
-            <div class="wf-row tight"><span class="tag tag-ai">AI priority</span></div>
-            <span class="wf-s">Deadline proximity · overlap with your responsibilities · attached conflict · unanswered questions</span>
-          </div>
-          <p class="wf-lbl mt">Open on you</p>
-          <div class="wf-card conf"><span class="wf-s">1 suggestion awaiting your reply</span></div>
+      </div>
+      <div class="wf-toast" aria-label="Open on you">
+        <div class="wf-row tight">
+          <span class="tag tag-con">Open on you</span>
+          <span class="wf-s" style="margin-left:auto">Dismiss</span>
         </div>
+        <span class="wf-s">1 suggestion awaiting your reply — open Notifications for the latest items that need you</span>
       </div>
     </div>
     <div class="anno"><ul>
       <li><span class="k">→</span>Unread high-priority pins to the top under priority sort (FR-14.6). Seen posts fade rather than disappear.</li>
       <li><span class="k">→</span>Every post states what was done to it — "adapted for Marketing", "translated from Thai" (FR-10.5).</li>
-      <li><span class="k">→</span>Priority carries a hoverable reason. An unexplained ranking gets ignored.</li>
+      <li><span class="k">→</span>Priority factors are fixed — explained via a compact AI info icon next to the sort control, not a permanent right rail (FR-14.3). Per-post reason still surfaces on the priority badge.</li>
+      <li><span class="k">→</span>"Open on you" does <strong>not</strong> own a feed sidebar. Items that need the receiver land in the top-bar notification bell (latest concerned posts / awaiting replies), optionally as a bottom-right toast, and remain reachable from Views → Your suggestions / dashboard-style lists (FR-8.5, D-17).</li>
       <li><span class="k">→</span>The topic tag is the sending team's node label, carried onto the post automatically at send time — nobody types it (FR-14.7). Selecting one or more tags filters the feed to posts touching that topic; tags can combine with priority/newest/oldest sort (FR-14.8).</li>
       <li><span class="k">→</span>A post built from more than one node shows more than one tag — the filter matches on any.</li>
     </ul></div>
@@ -931,7 +1265,7 @@ td.pri{font-family:var(--mono);font-size:11.5px;font-weight:600;text-align:cente
   <div class="wf-wrap" id="w6">
     <div class="wf-head">
       <h3>5.6 Post detail and review actions</h3>
-      <p class="wf-meta">Adapted by default, original one click away, explicit review outcomes. Source and history live behind the ••• menu; suggestion composer lives inline. <b>FR-10.4, FR-10.6 – FR-10.8, FR-11.4, FR-7.1 – FR-7.4</b></p>
+      <p class="wf-meta">Adapted by default, original one click away, explicit review outcomes. Source and history live behind the ••• menu; suggestion composer lives inline. <b>FR-10.4, FR-10.6 – FR-10.8, FR-11.4, FR-7.1 – FR-7.11</b></p>
     </div>
     <div class="wf">
       <div class="wf-chrome"><span class="wf-dot"></span><span class="wf-dot"></span><span class="wf-dot"></span><span class="wf-url">/channels/engineering-marketing/posts/1842</span></div>
@@ -996,6 +1330,9 @@ td.pri{font-family:var(--mono);font-size:11.5px;font-weight:600;text-align:cente
               <span class="wf-btn ai">Preview in their terms</span>
               <span class="wf-btn prime">Propose</span>
             </div>
+            <div class="wf-row tight" style="margin-top:8px">
+              <span class="wf-s">Open requests: Approve · Cancel request</span>
+            </div>
           </div>
 
           <p class="wf-lbl mt">Decisions in this post</p>
@@ -1036,7 +1373,7 @@ td.pri{font-family:var(--mono);font-size:11.5px;font-weight:600;text-align:cente
             <div class="wf-row tight"><span class="tag tag-ghost">4 Jun</span><span class="wf-s">Ship date added from Launch spec v2</span></div>
             <div class="wf-row tight" style="margin-top:8px"><span class="tag tag-ai">agent</span><span class="wf-s">linked · conf 0.86</span></div>
             <div class="wf-row tight"><span class="tag tag-hum">Priya · Engineering</span><span class="wf-s">resolved conflict</span></div>
-            <div class="wf-row tight"><span class="tag tag-hum">Design</span><span class="wf-s">suggestion accepted</span></div>
+            <div class="wf-row tight"><span class="tag tag-hum">Design</span><span class="wf-s">suggestion applied (dual-approved)</span></div>
           </div>
         </div>
       </div>
@@ -1048,7 +1385,7 @@ td.pri{font-family:var(--mono);font-size:11.5px;font-weight:600;text-align:cente
       <li><span class="k">→</span>A reply from Engineering is reverse-adapted into Marketing's terms and labelled as such (FR-10.11).</li>
       <li><span class="k">→</span>Review actions update the status of decisions carried in the post (FR-6.4).</li>
       <li><span class="k">→</span>No node UI, no graph canvas anywhere. The ••• menu is the only entry point to a node's provenance: <strong>View source</strong> shows which document(s) it came from; <strong>History</strong> opens a right-hand sidebar with the full change list — agent actions and human actions distinguished, each dated and, where relevant, credited to the person who made it.</li>
-      <li><span class="k">→</span>Proposing a change is inline against the selected package item, not on a separate receiver-graph screen — the composer, preview, and reverse adaptation still apply per FR-7.1 – FR-7.4.</li>
+      <li><span class="k">→</span>Proposing a change is inline against the selected package item, not on a separate receiver-graph screen — the composer, preview, reverse adaptation, dual approve, and cancel still apply per FR-7.1 – FR-7.11.</li>
       <li><span class="k">→</span>This History sidebar is exactly how a receiver learns the sender's internal conflict resolution (OQ-8, D-14) — the entry "Priya · Engineering — resolved conflict" is visible here, but never surfaced on the post body itself.</li>
     </ul></div>
   </div>
@@ -1057,7 +1394,7 @@ td.pri{font-family:var(--mono);font-size:11.5px;font-weight:600;text-align:cente
   <div class="wf-wrap" id="w8">
     <div class="wf-head">
       <h3>5.8 Suggestion queue — sender inbox</h3>
-      <p class="wf-meta">Incoming proposals against your graph. The loop that closes. <b>FR-7.5 – FR-7.9</b></p>
+      <p class="wf-meta">Incoming proposals against your graph. Dual approve before apply; proposer can cancel. <b>FR-7.5 – FR-7.11</b></p>
     </div>
     <div class="wf">
       <div class="wf-chrome"><span class="wf-dot"></span><span class="wf-dot"></span><span class="wf-dot"></span><span class="wf-url">/teams/engineering/review/suggestions</span></div>
@@ -1090,31 +1427,38 @@ td.pri{font-family:var(--mono);font-size:11.5px;font-weight:600;text-align:cente
           </div>
 
           <div class="wf-row" style="margin-top:14px">
-            <span class="wf-btn prime">Accept</span>
-            <span class="wf-btn">Edit and counter-propose</span>
+            <span class="wf-btn prime">Accept (propose)</span>
+            <span class="wf-btn">Edit &amp; propose</span>
             <span class="wf-btn warn">Reject with reason</span>
           </div>
-          <p class="wf-lbl mt">Accepting writes a new node version, credits Marketing in history, and notifies them</p>
+          <p class="wf-lbl mt">Accept/Edit stages the change and records your team's approval — Marketing must also approve before the node updates</p>
+          <div class="wf-row" style="margin-top:10px">
+            <span class="tag tag-hum">awaiting_approvals</span>
+            <span class="wf-btn">Approve change</span>
+            <span class="wf-s">Waiting: Marketing</span>
+          </div>
         </div>
         <div class="wf-side">
           <p class="wf-lbl">Thread</p>
           <div class="wf-card">
             <div class="wf-row tight"><span class="tag tag-hum">Marketing</span><span class="wf-s">proposed</span></div>
-            <div class="wf-row tight"><span class="tag tag-ghost">awaiting</span><span class="wf-s">your response</span></div>
+            <div class="wf-row tight"><span class="tag tag-ghost">awaiting</span><span class="wf-s">dual approvals</span></div>
           </div>
-          <p class="wf-lbl mt">Status closes with</p>
+          <p class="wf-lbl mt">Proposer controls</p>
           <div class="wf-card hum">
-            <span class="wf-s">Marketing marks the thread Resolved or Still Open once you respond</span>
+            <span class="wf-s">Marketing can Cancel request while open / awaiting, or Close after applied</span>
           </div>
         </div>
       </div>
     </div>
     <div class="anno"><ul>
-      <li><span class="k">→</span>The proposer's team is credited in node history on acceptance (FR-7.8) — feedback becomes attributable authorship.</li>
+      <li><span class="k">→</span>Accept/Edit does <strong>not</strong> write the graph immediately — it stages <code>proposed_text</code> and records the owning team's approval (FR-7.5, FR-7.6, D-18).</li>
+      <li><span class="k">→</span>Both teams must approve before apply; then history credits the proposing team (FR-7.8, FR-7.10).</li>
       <li><span class="k">→</span>Rejection requires a reason, visible to the proposing team (FR-7.6). Silent rejection kills the loop.</li>
-      <li><span class="k">→</span>The receiver closes their own thread (FR-7.9). This was an AI judge in v0.3 and got cut — the human is right there.</li>
-      <li><span class="k">→</span>Accept / Edit and counter-propose / Reject with reason are <strong>Team Lead</strong> actions (OQ-7, D-13).</li>
-      <li><span class="k">→</span>A suggestion can only target a node inside the package this team actually received — not the sender's graph at large (OQ-9, D-15).</li>
+      <li><span class="k">→</span>The proposing team may <strong>cancel</strong> while <code>open</code> or <code>awaiting_approvals</code> (FR-7.11, D-19).</li>
+      <li><span class="k">→</span>The receiver closes their own thread after apply/reject (FR-7.9).</li>
+      <li><span class="k">→</span>Accept / Edit / Reject are <strong>Team Lead</strong> actions (OQ-7, D-13). Approve and Cancel are party-team actions.</li>
+      <li><span class="k">→</span>A suggestion can only target a node inside the package this team actually received (OQ-9, D-15).</li>
     </ul></div>
   </div>
 
@@ -1122,15 +1466,21 @@ td.pri{font-family:var(--mono);font-size:11.5px;font-weight:600;text-align:cente
   <div class="wf-wrap" id="w9">
     <div class="wf-head">
       <h3>5.9 Decision register</h3>
-      <p class="wf-meta">The alignment pillar, made a screen. <b>FR-6.1 – FR-6.4</b></p>
+      <p class="wf-meta">The alignment pillar, made a screen. Scoped per interaction (team pair / channel); Summary and Source sit under the list — not a right rail. <b>FR-6.1 – FR-6.5</b></p>
     </div>
     <div class="wf">
-      <div class="wf-chrome"><span class="wf-dot"></span><span class="wf-dot"></span><span class="wf-dot"></span><span class="wf-url">/channels/engineering-marketing/decisions</span></div>
+      <div class="wf-chrome"><span class="wf-dot"></span><span class="wf-dot"></span><span class="wf-dot"></span><span class="wf-url">/teams/:teamId/decisions?channel=engineering-marketing</span></div>
       <div class="wf-body">
-        <div class="wf-main">
+        <div class="wf-main" style="border-right:none;flex:1 1 100%">
           <div class="wf-row">
             <span class="wf-t">Decisions — Engineering ↔ Marketing</span>
             <span class="wf-toggle" style="margin-left:auto"><span class="on">All</span><span>Contested</span><span>Open</span></span>
+          </div>
+          <div class="wf-row tight" style="margin-top:6px">
+            <span class="wf-s">Interaction</span>
+            <span class="tag tag-hum sel">Engineering ↔ Marketing</span>
+            <span class="tag tag-ghost">Engineering ↔ Design</span>
+            <span class="tag tag-ghost">Engineering ↔ Data</span>
           </div>
 
           <div class="wf-card conf">
@@ -1148,20 +1498,21 @@ td.pri{font-family:var(--mono);font-size:11.5px;font-weight:600;text-align:cente
           <div class="wf-card">
             <div class="wf-row tight"><span class="tag tag-ghost">proposed</span><span class="wf-t">Region list</span><span class="wf-s" style="margin-left:auto">owner: unassigned</span></div>
             <div class="wf-bar w60" style="margin-top:8px"></div>
-            <div class="wf-row tight" style="margin-top:8px"><span class="tag tag-con">no owner</span><span class="wf-s">flagged by the pre-send checklist</span></div>
+            <div class="wf-row tight" style="margin-top:8px"><span class="tag tag-con">no owner</span><span class="wf-s">flagged by the pre-send checklist · send blocked</span></div>
           </div>
 
           <div class="wf-card" style="opacity:.62">
             <div class="wf-row tight"><span class="tag tag-ghost">superseded</span><span class="wf-t">Rate limits v1</span></div>
             <div class="wf-row tight" style="margin-top:6px"><span class="wf-s">replaced by Rate limits v2 · 12 Jul</span></div>
           </div>
-        </div>
-        <div class="wf-side">
-          <p class="wf-lbl">Summary</p>
+
+          <p class="wf-lbl mt">Summary</p>
           <div class="wf-card">
-            <div class="wf-row tight"><span class="tag tag-hum">4 agreed</span></div>
-            <div class="wf-row tight"><span class="tag tag-con">1 contested</span></div>
-            <div class="wf-row tight"><span class="tag tag-ghost">2 proposed</span></div>
+            <div class="wf-row tight">
+              <span class="tag tag-hum">4 agreed</span>
+              <span class="tag tag-con">1 contested</span>
+              <span class="tag tag-ghost">2 proposed</span>
+            </div>
           </div>
           <p class="wf-lbl mt">Source</p>
           <div class="wf-card"><span class="wf-s">Every row traces to a claim of type <code>decision</code> and its document span</span></div>
@@ -1170,8 +1521,10 @@ td.pri{font-family:var(--mono);font-size:11.5px;font-weight:600;text-align:cente
     </div>
     <div class="anno"><ul>
       <li><span class="k">→</span>Decisions are extracted, not typed in by hand — they come from the claim extractor (FR-6.1).</li>
+      <li><span class="k">→</span>The register is scoped to one <strong>interaction</strong> (channel / team pair). Switch Engineering ↔ Marketing vs Engineering ↔ Design without leaving the page (FR-6.2, FR-6.5).</li>
       <li><span class="k">→</span>Status changes as review actions land (FR-6.4). "Agreed" means a team pressed Agree, not that nobody objected.</li>
-      <li><span class="k">→</span>An unowned decision is a defect the pre-send checklist catches (FR-9.5).</li>
+      <li><span class="k">→</span>Summary and Source live <strong>under</strong> the decision list — not a permanent right rail (same no-right-rail posture as the channel feed).</li>
+      <li><span class="k">→</span>An unowned decision (<code>owner_team_id</code> null) is a hard stop: the pre-send checklist fails and <strong>Send is blocked</strong> until a receiving owner is assigned (FR-6.3, FR-9.5). A package receiver / decision owner is mandatory.</li>
     </ul></div>
   </div>
 </section>
@@ -1249,9 +1602,10 @@ td.pri{font-family:var(--mono);font-size:11.5px;font-weight:600;text-align:cente
     <thead><tr><th>ID</th><th>Requirement</th><th>Pri</th></tr></thead>
     <tbody>
       <tr><td class="id">FR-6.1</td><td>A claim of type <code>decision</code> is automatically promoted to a Decision object — never typed in by hand</td><td class="pri p0">P0</td></tr>
-      <tr><td class="id">FR-6.2</td><td>Decision Register lists every decision per channel, filterable by All / Contested / Open</td><td class="pri p0">P0</td></tr>
-      <tr><td class="id">FR-6.3</td><td>A decision with no <code>owner_team_id</code> is flagged by the pre-send checklist (FR-9.5)</td><td class="pri p0">P0</td></tr>
+      <tr><td class="id">FR-6.2</td><td>Decision Register lists every decision <strong>per channel / interaction</strong> (team pair), filterable by All / Contested / Open; the UI switches interactions (e.g. Engineering ↔ Marketing vs Engineering ↔ Design) without leaving the register</td><td class="pri p0">P0</td></tr>
+      <tr><td class="id">FR-6.3</td><td>A decision with no <code>owner_team_id</code> is flagged in the register and by the pre-send checklist; <strong>Send is blocked</strong> until every in-scope decision has an owner (receiver mandatory) — see FR-9.5</td><td class="pri p0">P0</td></tr>
       <tr><td class="id">FR-6.4</td><td>Post-level review actions (Agree / Request changes / Blocked) update the status of decisions carried in that post</td><td class="pri p0">P0</td></tr>
+      <tr><td class="id">FR-6.5</td><td>Decision Register Summary (agreed / contested / proposed counts) and Source note render <strong>below</strong> the decision list — not as a permanent right rail</td><td class="pri p0">P0</td></tr>
     </tbody>
   </table></div>
 
@@ -1261,11 +1615,15 @@ td.pri{font-family:var(--mono);font-size:11.5px;font-weight:600;text-align:cente
     <tbody>
       <tr><td class="id">FR-7.1</td><td>Receiver can attach a suggestion to a specific node or claim <strong>within the package they received</strong> — not the sender's graph at large (OQ-9, D-15)</td><td class="pri p0">P0</td></tr>
       <tr><td class="id">FR-7.2</td><td>Types: <code>edit_text</code>, <code>add_detail</code>, <code>flag_incorrect</code>, <code>request_clarification</code>, <code>propose_alternative</code></td><td class="pri p0">P0</td></tr>
-      <tr><td class="id">FR-7.3</td><td>Suggestions are <strong>proposals only</strong> — they never write to the sender's graph directly</td><td class="pri p0">P0</td></tr>
+      <tr><td class="id">FR-7.3</td><td>Suggestions are <strong>proposals only</strong> — they never write to the sender's graph until dual approval completes (D-18)</td><td class="pri p0">P0</td></tr>
       <tr><td class="id">FR-7.4</td><td><strong>Reverse-adapted:</strong> written in the receiver's vocabulary, shown to the sender in the sender's terms, original one click away</td><td class="pri p0">P0</td></tr>
-      <tr><td class="id">FR-7.6</td><td>Sender actions: Accept (applies edit, new version, history entry), Edit (counter-proposal), Reject (reason required) — restricted to the Team Lead (OQ-7, D-13)</td><td class="pri p0">P0</td></tr>
-      <tr><td class="id">FR-7.8</td><td>Accepting credits the proposing team and user in node history</td><td class="pri p0">P0</td></tr>
-      <tr><td class="id">FR-7.9</td><td>After the sender responds, the <strong>receiver</strong> marks the thread Resolved or Still Open</td><td class="pri p0">P0</td></tr>
+      <tr><td class="id">FR-7.5</td><td>Lead Accept / Edit <strong>stages</strong> <code>proposed_text</code>, sets status <code>awaiting_approvals</code>, and records the owning team's approval — does <strong>not</strong> mutate the node yet</td><td class="pri p0">P0</td></tr>
+      <tr><td class="id">FR-7.6</td><td>Sender Lead actions: Accept (propose), Edit (counter-propose text), Reject (reason required) — restricted to the Team Lead (OQ-7, D-13)</td><td class="pri p0">P0</td></tr>
+      <tr><td class="id">FR-7.7</td><td>Reject is terminal (<code>rejected</code>) — no dual-approve path; reason visible to the proposing team</td><td class="pri p0">P0</td></tr>
+      <tr><td class="id">FR-7.8</td><td>When the change is <strong>applied</strong> after dual approve, credit the proposing team and user in node history</td><td class="pri p0">P0</td></tr>
+      <tr><td class="id">FR-7.9</td><td>After the change is applied or rejected, the <strong>proposing team</strong> closes the thread (<code>closed</code>)</td><td class="pri p0">P0</td></tr>
+      <tr><td class="id">FR-7.10</td><td><strong>Dual approve before apply (D-18):</strong> both proposing team and owning team must approve while status is <code>awaiting_approvals</code>; only then apply node edit, bump version, enqueue regen, set <code>applied_at</code></td><td class="pri p0">P0</td></tr>
+      <tr><td class="id">FR-7.11</td><td><strong>Proposer cancel (D-19):</strong> the proposing team may cancel while status is <code>open</code> or <code>awaiting_approvals</code>; status becomes <code>cancelled</code>; no graph write; owning team is notified</td><td class="pri p0">P0</td></tr>
     </tbody>
   </table></div>
 
@@ -1275,8 +1633,10 @@ td.pri{font-family:var(--mono);font-size:11.5px;font-weight:600;text-align:cente
     <tbody>
       <tr><td class="id">FR-8.1</td><td>In-app notification when a node underlying a delivered post changes post-send (D-4)</td><td class="pri p0">P0</td></tr>
       <tr><td class="id">FR-8.2</td><td>In-app notification when a new suggestion arrives against your team's graph</td><td class="pri p0">P0</td></tr>
-      <tr><td class="id">FR-8.3</td><td>In-app notification when a sender responds to your team's suggestion</td><td class="pri p0">P0</td></tr>
+      <tr><td class="id">FR-8.3</td><td>In-app notification when a sender responds to your team's suggestion (staged proposal / reject) or when dual approve applies the change</td><td class="pri p0">P0</td></tr>
+      <tr><td class="id">FR-8.3a</td><td>In-app notification to the owning team when the proposing team cancels a suggestion (FR-7.11)</td><td class="pri p0">P0</td></tr>
       <tr><td class="id">FR-8.4</td><td>Notifications are in-app only for v1 — email and digest notifications are out of scope (§1.5 non-goals)</td><td class="pri p0">P0</td></tr>
+      <tr><td class="id">FR-8.5</td><td><strong>Open-on-you</strong> items (suggestions awaiting reply, posts that need you) surface via the top-bar notification bell and may appear as a dismissible bottom-right toast — never as a permanent channel-feed right rail. The bell lists the latest concerned items; Views / Your suggestions remain the durable list (D-17)</td><td class="pri p0">P0</td></tr>
     </tbody>
   </table></div>
 
@@ -1286,9 +1646,9 @@ td.pri{font-family:var(--mono);font-size:11.5px;font-weight:600;text-align:cente
     <tbody>
       <tr><td class="id">FR-9.1</td><td>Checklist runs deterministically — no LLM call — before a package can be sent</td><td class="pri p0">P0</td></tr>
       <tr><td class="id">FR-9.2</td><td>Checks: unresolved internal review items in scope, decisions without an owner, dangling references to excluded nodes, terms unknown to the receiving team's profile</td><td class="pri p0">P0</td></tr>
-      <tr><td class="id">FR-9.3</td><td>A failing check does not block sending — it's surfaced for the sender to fix or knowingly proceed past</td><td class="pri p0">P0</td></tr>
-      <tr><td class="id">FR-9.4</td><td>Checklist result is stored on the Package record</td><td class="pri p0">P0</td></tr>
-      <tr><td class="id">FR-9.5</td><td>An unowned decision in scope always fails the checklist</td><td class="pri p0">P0</td></tr>
+      <tr><td class="id">FR-9.3</td><td>Most failing checks are surfaced for the sender to fix or knowingly proceed past — <strong>except</strong> unowned decisions (FR-9.5), which always block Send</td><td class="pri p0">P0</td></tr>
+      <tr><td class="id">FR-9.4</td><td>Checklist result is stored on the Package record (including unowned decision titles when present)</td><td class="pri p0">P0</td></tr>
+      <tr><td class="id">FR-9.5</td><td>An unowned decision in scope always fails the checklist <strong>and blocks Send</strong> — every decision must have an <code>owner_team_id</code> (receiving owner); this cannot be bypassed</td><td class="pri p0">P0</td></tr>
     </tbody>
   </table></div>
 
@@ -1337,7 +1697,7 @@ td.pri{font-family:var(--mono);font-size:11.5px;font-weight:600;text-align:cente
     <tbody>
       <tr><td class="id">FR-13.1</td><td>Every node edit, agent or human, writes a NodeHistory entry with before/after state</td><td class="pri p0">P0</td></tr>
       <tr><td class="id">FR-13.2</td><td>History view renders a readable diff between consecutive node versions, not raw before/after blobs</td><td class="pri p1">P1</td></tr>
-      <tr><td class="id">FR-13.3</td><td>Accepting a suggestion writes a new node version linked back to the source suggestion (<code>source_suggestion_id</code>)</td><td class="pri p0">P0</td></tr>
+      <tr><td class="id">FR-13.3</td><td>Applying a dual-approved suggestion writes a new node version linked back to the source suggestion (<code>source_suggestion_id</code>)</td><td class="pri p0">P0</td></tr>
     </tbody>
   </table></div>
 
@@ -1347,7 +1707,7 @@ td.pri{font-family:var(--mono);font-size:11.5px;font-weight:600;text-align:cente
     <tbody>
       <tr><td class="id">FR-14.1</td><td>Prioritization Agent scores every post at send time</td><td class="pri p0">P0</td></tr>
       <tr><td class="id">FR-14.2</td><td>Score factors: deadline proximity, overlap with the receiving team's stated responsibilities, attached conflicts, unanswered questions</td><td class="pri p0">P0</td></tr>
-      <tr><td class="id">FR-14.3</td><td>Priority is shown with a hoverable reason — never an unexplained rank</td><td class="pri p0">P0</td></tr>
+      <tr><td class="id">FR-14.3</td><td>Priority ranking is never unexplained: the fixed factor set (FR-14.2) is available via a compact AI info icon next to the sort control; each post's priority badge also exposes its per-post reason on hover/focus — not a permanent "Why this order" sidebar</td><td class="pri p0">P0</td></tr>
       <tr><td class="id">FR-14.6</td><td>Unread high-priority posts pin to the top under Priority sort; seen posts fade rather than disappear</td><td class="pri p0">P0</td></tr>
       <tr><td class="id">FR-14.7</td><td>Each included node's label becomes a topic tag on the resulting post automatically — nothing to set manually</td><td class="pri p0">P0</td></tr>
       <tr><td class="id">FR-14.8</td><td>Selecting one or more topic tags filters the feed to posts touching that topic; tags combine with sort</td><td class="pri p0">P0</td></tr>
@@ -1461,7 +1821,7 @@ Node(id, owner_team_id, label, type, summary, created_by, created_at)
 Claim(id, node_id, text, claim_type, document_id, doc_version,
       span_start, span_end, confidence)
 Decision(id, claim_id, statement, status, owner_team_id,
-         affected_team_ids[], superseded_by)
+         channel_id, affected_team_ids[], superseded_by)
 Edge(id, from_node, to_node, relation, confidence, created_by)
 NodeHistory(id, node_id, actor_type, actor_id, source_suggestion_id?,
             action, before, after, agent_trace_id, at)
@@ -1470,9 +1830,13 @@ ReviewItem(id, team_id, node_id, scope, claim_a, claim_b, counterpart_team_id,
            ai_class, ai_rationale, status, resolved_by,
            resolution_note, marked_false_positive, resolved_at)
 
-Suggestion(id, post_id, target_node_id, target_claim_id?, proposing_team_id,
-           author_id, type, body_original, body_reverse_adapted, status,
-           responded_by, response_note, receiver_marked_resolved, created_at)
+Suggestion(id, post_id, package_id, target_node_id, target_node_version?,
+           proposer_team_id, target_team_id, author_id, type,
+           original_text, adapted_preview, proposed_text?,
+           status, response?, response_reason?, responded_by?,
+           applied_at?, closed_by_receiver, created_at)
+SuggestionApproval(id, org_id, suggestion_id, team_id, user_id, created_at)
+  — unique (suggestion_id, team_id); dual-approve ledger (D-18)
 
 Package(id, from_team, to_team, cover_note, priority_hint, sent_by, sent_at,
         checklist_result)
@@ -1519,7 +1883,7 @@ JudgeVerdict(id, rendition_id, fidelity_verdict, fidelity_findings,
     <dt>M2</dt><dd><strong>The graph</strong> — decomposition, claim extraction, linking, history (no graph canvas or node-inspector screen — the graph lives in the data model and drives everything downstream; source and history are exposed via the post's ••• menu instead, §5.6)</dd>
     <dt>M3</dt><dd><strong>Conflict</strong> — intra-team detection, review queue, human resolution (no AI suggestion), decisions as first-class objects</dd>
     <dt>M4</dt><dd><strong>Delivery</strong> — package selection, pre-send checklist, cross-team scan, adaptation, Rendition Judge, preview, channel, posts</dd>
-    <dt>M5</dt><dd><strong>The review loop</strong> — review actions, comments, suggestions, reverse adaptation, sender queue, notifications, Decision Register</dd>
+    <dt>M5</dt><dd><strong>The review loop</strong> — review actions, comments, suggestions, reverse adaptation, dual-team approve before apply, proposer cancel, sender queue, notifications, Decision Register</dd>
     <dt>M6</dt><dd><strong>Polish</strong> — priority, sorting, topic tag filter, read state, glossary, AI-assisted profiles, diffs</dd>
     <dt>M7</dt><dd><strong>Eval</strong> — golden set, regression gate on conflict precision and judge agreement, observability</dd>
   </dl>
@@ -1542,16 +1906,19 @@ JudgeVerdict(id, rendition_id, fidelity_verdict, fidelity_findings,
       <tr><td class="id">D-4</td><td><strong>Post-send changes notify.</strong> The receiving team is notified when a delivered node changes; the post gets an "Updated" badge and the rendition regenerates.</td></tr>
       <tr><td class="id">D-5</td><td><strong>Data-sensitivity concerns deferred.</strong> Commercial LLM APIs assumed.</td></tr>
       <tr><td class="id">D-6</td><td><strong>Full feature scope.</strong> No hackathon cut; §9 sequences the build rather than trimming it.</td></tr>
-      <tr><td class="id">D-7</td><td><strong>Receiver feedback is code review.</strong> Suggestions are proposals against specific nodes, reverse-adapted into the sender's vocabulary, applied only by the owning team, credited in node history, and closed by the receiver.</td></tr>
+      <tr><td class="id">D-7</td><td><strong>Receiver feedback is code review.</strong> Suggestions are proposals against specific nodes, reverse-adapted into the sender's vocabulary, staged by the owning Lead, applied only after dual-team approval (D-18), credited in node history, cancellable by the proposer before apply (D-19), and closed by the proposing team after apply/reject.</td></tr>
       <tr><td class="id">D-8</td><td><strong>One runtime judge.</strong> A judge earns its place only where no human gate follows — which in this pipeline means adaptation alone. Fidelity and audience fit are two dimensions of one verdict, one call.</td></tr>
       <tr><td class="id">D-9</td><td><strong>Team profile schema (OQ-1).</strong> <code>TeamProfile(id, team_id, version, identity_label, identity_description, translation_style, expertise_level, tone, detail_depth_default, responsibilities[], jargon_known[], jargon_must_explain[], preferred_language, created_at)</code> — Ryu's proposed fields, extended with the jargon lists and preferred language needed to back the W1 form and the judge's fit rubric. See §8.</td></tr>
       <tr><td class="id">D-10</td><td><strong>Conflict detection does not re-run on receipt (OQ-4).</strong> It runs exactly twice — intra-team on ingest, cross-team at send — because the send-time scan already checks against the receiver's graph before the content ever arrives; a third pass on the receiving side would be redundant.</td></tr>
       <tr><td class="id">D-11</td><td><strong>Both translation modes in scope (OQ-5).</strong> V1 supports literal cross-language translation and same-language jargon adaptation, selected per team via <code>translation_style</code> and <code>preferred_language</code> on the Team Profile.</td></tr>
       <tr><td class="id">D-12</td><td><strong>Channels are one-to-one (OQ-6).</strong> A Channel connects exactly two teams; confirmed against the existing <code>Channel(id, team_a, team_b)</code> model.</td></tr>
-      <tr><td class="id">D-13</td><td><strong>Lead approval required (OQ-7).</strong> Resolving a conflict and accepting/rejecting a suggestion are Team Lead actions. Members can raise, discuss, and propose, but only the Lead finalizes — matching the existing §2 roles table.</td></tr>
+      <tr><td class="id">D-13</td><td><strong>Lead approval required (OQ-7).</strong> Resolving a conflict and Accept / Edit / Reject on a suggestion are Team Lead actions. Members can raise, discuss, and propose. Accept/Edit stages a proposal and records the owning team's approval — it does not alone write the graph (see D-18).</td></tr>
       <tr><td class="id">D-14</td><td><strong>Internal resolutions surface via History only (OQ-8).</strong> The receiver can see how the sender resolved an internal conflict, but only by opening the post's History sidebar (§5.6) — never surfaced by default on the post body.</td></tr>
       <tr><td class="id">D-15</td><td><strong>Suggestion scope is package-bound (OQ-9).</strong> A receiver's suggestion may only target a node included in the package they actually received, not the sender's graph at large.</td></tr>
       <tr><td class="id">D-16</td><td><strong>Cross-team agent reads broadly, UI reveals narrowly (OQ-3).</strong> The Conflict Agent may query all of Team B's graph when scanning Team A's outgoing package — restricting it to only what B has already shared would miss most real collisions. The privacy boundary is enforced downstream instead: the agent's output schema carries only the single matched claim, and no code path passes raw cross-team graph results to a UI or API response (consistent with D-2 and the §7.6 guardrail). Revisit if this reasoning doesn't hold up under review.</td></tr>
+      <tr><td class="id">D-17</td><td><strong>Channel feed has no right-rail chrome for open items or priority explain (§5.5).</strong> "Open on you" is a notification concern (bell + optional toast + Views lists). "Why this order" is an AI info affordance beside Priority sort — the factor text is fixed (FR-14.2), so it must not consume a permanent column.</td></tr>
+      <tr><td class="id">D-18</td><td><strong>Dual-team approve before apply.</strong> After the owning Lead Accepts or Edits, status is <code>awaiting_approvals</code> with <code>proposed_text</code> staged. Both the proposing team and the owning team must record approval (via <code>SuggestionApproval</code>). Only then is the node mutated, version bumped, history written, and rendition regen enqueued. Reject skips this path.</td></tr>
+      <tr><td class="id">D-19</td><td><strong>Proposer may cancel before apply.</strong> The proposing team can cancel while status is <code>open</code> or <code>awaiting_approvals</code>. Status becomes <code>cancelled</code>; the owning team is notified; no graph write. Cancel is not available after <code>applied</code> / <code>rejected</code>.</td></tr>
     </tbody>
   </table></div>
 </section>
@@ -1619,10 +1986,14 @@ GET    /api/channels/:channelId/posts        feed, supports sort + tag filter (F
 GET    /api/posts/:id                        adapted + original + judge verdict
 POST   /api/posts/:id/review-actions         Agree / Request changes / Blocked (FR-6.4)
 POST   /api/posts/:id/suggestions            propose a suggestion, package-scoped (FR-7.1, D-15)
-POST   /api/suggestions/:id/respond          Accept / Edit / Reject (Lead only, D-13)
-POST   /api/suggestions/:id/close            receiver marks Resolved / Still Open (FR-7.9)
+POST   /api/suggestions/:id/respond          Accept / Edit / Reject — Lead only; Accept/Edit stages dual approve (D-13, FR-7.5)
+POST   /api/suggestions/:id/approve          party-team approval; applies when both approved (FR-7.10, D-18)
+POST   /api/suggestions/:id/cancel           proposing team withdraws while open / awaiting (FR-7.11, D-19)
+POST   /api/suggestions/:id/close            proposing team closes after applied / rejected (FR-7.9)
+GET    /api/teams/:teamId/suggestions        inbound + outbound suggestion queue
 
-GET    /api/channels/:channelId/decisions    Decision Register (FR-6.2)
+GET    /api/teams/:teamId/channels           list interactions (team pairs) for the Decision Register (FR-6.2, FR-6.5)
+GET    /api/channels/:channelId/decisions    Decision Register per interaction; ?status=all|contested|open (FR-6.2)
 GET    /api/posts/:id/history                NodeHistory for this post's nodes (FR-10.6)
 GET    /api/notifications                    unread notifications (FR-8)</code></pre>
 
@@ -1640,7 +2011,7 @@ GET    /api/notifications                    unread notifications (FR-8)</code><
   </table></div>
 </section>
 
-<p class="end">PRD v0.4 · Wireframes are low-fidelity layout and hierarchy only — not visual design. All fourteen requirement groups are inlined in §6; §12 adds the build-facing stack, API surface, and NFRs.</p>
+<p class="end">PRD v0.5 · Wireframes are low-fidelity layout and hierarchy only — not visual design. All fourteen requirement groups are inlined in §6; §12 adds the build-facing stack, API surface, and NFRs. v0.5 adds dual-team approve before apply (D-18) and proposer cancel (D-19).</p>
 
 </main>
 </div>

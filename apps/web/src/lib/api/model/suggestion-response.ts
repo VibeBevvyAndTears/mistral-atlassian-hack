@@ -13,11 +13,15 @@ export interface SuggestionResponse {
   target_team_id: string;
   original_text: string;
   adapted_preview?: string | null;
+  proposed_text?: string | null;
   status: string;
   response?: string | null;
   response_reason?: string | null;
   target_node_id?: string | null;
   target_node_version?: number | null;
   suggestion_type?: 'edit_text' | 'add_detail' | 'flag_incorrect' | 'request_clarification' | 'propose_alternative' | null;
+  approved_team_ids?: string[];
+  awaiting_team_ids?: string[];
+  applied_at?: string | null;
   created_at: string;
 }

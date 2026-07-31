@@ -52,7 +52,7 @@ import { useCustomInstance } from '../../../hooks/use-custom-instance';
 
 
 /**
- * Register with email/password and issue backend tokens.
+ * Register with email/password/username and issue backend tokens.
  * @summary Register
  */
 export const useRegisterApiAuthRegisterPostHook = () => {

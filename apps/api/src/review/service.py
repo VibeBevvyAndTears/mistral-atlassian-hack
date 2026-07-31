@@ -36,10 +36,15 @@ from src.review.models import (
     ReviewAction,
     ReviewActionResponse,
     Suggestion,
+    SuggestionApproval,
     SuggestionResponse,
     SuggestionType,
 )
 from src.tenancy.models import Notification, TeamProfile
+
+AWAITING = "awaiting_approvals"
+APPLIED = "applied"
+CANCELLED = "cancelled"
 
 
 async def _profile(session: AsyncSession, team_id: UUID) -> TeamProfileSnapshot:
@@ -125,7 +130,14 @@ async def collapse_notification(
     )
 
 
-def _sug_resp(s: Suggestion) -> SuggestionResponse:
+def _sug_resp(
+    s: Suggestion, *, approved_team_ids: list[str] | None = None
+) -> SuggestionResponse:
+    approved = list(approved_team_ids or [])
+    parties = [str(s.target_team_id), str(s.proposer_team_id)]
+    awaiting: list[str] = []
+    if s.status == AWAITING:
+        awaiting = [t for t in parties if t not in approved]
     return SuggestionResponse(
         id=str(s.id),
         post_id=str(s.post_id),
@@ -134,14 +146,115 @@ def _sug_resp(s: Suggestion) -> SuggestionResponse:
         target_team_id=str(s.target_team_id),
         original_text=s.original_text,
         adapted_preview=s.adapted_preview,
+        proposed_text=s.proposed_text,
         status=s.status,
         response=s.response,
         response_reason=s.response_reason,
         target_node_id=str(s.target_node_id) if s.target_node_id else None,
         target_node_version=s.target_node_version,
         suggestion_type=(s.payload or {}).get("suggestion_type"),
+        approved_team_ids=approved,
+        awaiting_team_ids=awaiting,
+        applied_at=s.applied_at,
         created_at=s.created_at,
     )
+
+
+async def _approval_team_ids(
+    db: AsyncSession, *, suggestion_id: UUID
+) -> list[str]:
+    rows = (
+        await db.execute(
+            select(SuggestionApproval.team_id).where(
+                SuggestionApproval.suggestion_id == suggestion_id
+            )
+        )
+    ).scalars().all()
+    return [str(t) for t in rows]
+
+
+async def _record_approval(
+    db: AsyncSession,
+    *,
+    org_id: UUID,
+    suggestion_id: UUID,
+    team_id: UUID,
+    user_id: UUID,
+) -> None:
+    existing = (
+        await db.execute(
+            select(SuggestionApproval).where(
+                SuggestionApproval.suggestion_id == suggestion_id,
+                SuggestionApproval.team_id == team_id,
+            )
+        )
+    ).scalar_one_or_none()
+    if existing is not None:
+        return
+    db.add(
+        SuggestionApproval(
+            id=uuid.uuid4(),
+            org_id=org_id,
+            suggestion_id=suggestion_id,
+            team_id=team_id,
+            user_id=user_id,
+        )
+    )
+    await db.flush()
+
+
+async def _apply_approved_change(
+    db: AsyncSession,
+    *,
+    org_id: UUID,
+    sug: Suggestion,
+) -> None:
+    """Apply proposed_text to the target node and enqueue rendition regen."""
+    text = sug.proposed_text or sug.original_text
+    if sug.target_node_id is not None:
+        node = await db.get(Node, sug.target_node_id)
+        if node is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="Node not found"
+            )
+        if (
+            sug.target_node_version is not None
+            and node.version != sug.target_node_version
+        ):
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT, detail="stale_target"
+            )
+        node.summary = text
+        node.search_text = f"{node.label} {text}"
+        node.version = node.version + 1
+        db.add(
+            NodeHistory(
+                id=uuid.uuid4(),
+                node_id=node.id,
+                org_id=org_id,
+                team_id=sug.target_team_id,
+                version=node.version,
+                snapshot={"summary": text, "source_suggestion_id": str(sug.id)},
+                source="suggestion",
+            )
+        )
+        post = await db.get(Post, sug.post_id)
+        if post is not None:
+            post.updated_since_send = True
+            await enqueue(
+                db,
+                JobKind.regenerate_rendition,
+                {
+                    "post_id": str(post.id),
+                    "org_id": str(org_id),
+                    "suggestion_id": str(sug.id),
+                },
+                dedupe_key=f"regen:{post.id}",
+            )
+    sug.status = APPLIED
+    sug.applied_at = datetime.now(UTC)
+    sug.updated_at = datetime.now(UTC)
+    await db.flush()
 
 
 async def create_suggestion(
@@ -212,18 +325,35 @@ async def create_suggestion(
 async def list_suggestions_for_team(
     db: AsyncSession, *, org_id: UUID, team_id: UUID
 ) -> list[SuggestionResponse]:
+    """Inbound queue for target team + outbound awaiting approvals for proposer."""
+    from sqlalchemy import and_, or_
+
     rows = (
         await db.execute(
             select(Suggestion)
             .where(
                 Suggestion.org_id == org_id,
-                Suggestion.target_team_id == team_id,
-                Suggestion.status.in_(("open", "responded")),
+                or_(
+                    and_(
+                        Suggestion.target_team_id == team_id,
+                        Suggestion.status.in_(("open", AWAITING, APPLIED)),
+                    ),
+                    and_(
+                        Suggestion.proposer_team_id == team_id,
+                        Suggestion.status.in_(
+                            ("open", AWAITING, APPLIED, "closed", CANCELLED)
+                        ),
+                    ),
+                ),
             )
             .order_by(Suggestion.created_at.desc())
         )
     ).scalars().all()
-    return [_sug_resp(s) for s in rows]
+    out: list[SuggestionResponse] = []
+    for s in rows:
+        approved = await _approval_team_ids(db, suggestion_id=s.id)
+        out.append(_sug_resp(s, approved_team_ids=approved))
+    return out
 
 
 async def respond_suggestion(
@@ -238,6 +368,12 @@ async def respond_suggestion(
     edited_text: str | None,
     actor_role: str,
 ) -> SuggestionResponse:
+    """Target-team Lead responds.
+
+    accept/edit → propose text + record target approval; apply only after both
+    teams approve.
+    reject → terminal rejection (no dual approve).
+    """
     if actor_role not in ("owner", "lead"):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN, detail="Lead role required"
@@ -253,63 +389,147 @@ async def respond_suggestion(
             status_code=status.HTTP_400_BAD_REQUEST, detail="Rejection requires a reason"  # noqa: E501
         )
 
-    if response in ("accept", "edit"):
-        text = edited_text if response == "edit" and edited_text else sug.original_text
-        if sug.target_node_id is not None:
-            node = await db.get(Node, sug.target_node_id)
-            if node is None:
-                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Node not found")  # noqa: E501
-            if (
-                sug.target_node_version is not None
-                and node.version != sug.target_node_version
-            ):
-                raise HTTPException(
-                    status_code=status.HTTP_409_CONFLICT, detail="stale_target"
-                )
-            node.summary = text
-            node.search_text = f"{node.label} {text}"
-            node.version = node.version + 1
-            db.add(
-                NodeHistory(
-                    id=uuid.uuid4(),
-                    node_id=node.id,
-                    org_id=org_id,
-                    team_id=team_id,
-                    version=node.version,
-                    snapshot={"summary": text, "source_suggestion_id": str(sug.id)},
-                    source="suggestion",
-                )
-            )
-            post = await db.get(Post, sug.post_id)
-            if post is not None:
-                post.updated_since_send = True
-                await enqueue(
-                    db,
-                    JobKind.regenerate_rendition,
-                    {
-                        "post_id": str(post.id),
-                        "org_id": str(org_id),
-                        "suggestion_id": str(sug.id),
-                    },
-                    dedupe_key=f"regen:{post.id}",
-                )
-
     sug.response = response
     sug.response_reason = reason
     sug.responded_by = user_id
     sug.responded_at = datetime.now(UTC)
-    sug.status = "accepted" if response in ("accept", "edit") else "rejected"
     sug.updated_at = datetime.now(UTC)
+
+    if response == "reject":
+        sug.status = "rejected"
+        await db.flush()
+        await collapse_notification(
+            db,
+            org_id=org_id,
+            user_id=sug.created_by,
+            kind="suggestion_response",
+            post_id=sug.post_id,
+            payload={"suggestion_id": str(sug.id), "response": response},
+        )
+        return _sug_resp(sug, approved_team_ids=[])
+
+    # accept / edit — stage proposed text; do not apply until dual approval
+    text = edited_text if response == "edit" and edited_text else sug.original_text
+    if sug.target_node_id is not None:
+        node = await db.get(Node, sug.target_node_id)
+        if node is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="Node not found"
+            )
+        if (
+            sug.target_node_version is not None
+            and node.version != sug.target_node_version
+        ):
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT, detail="stale_target"
+            )
+    sug.proposed_text = text
+    sug.status = AWAITING
     await db.flush()
+    await _record_approval(
+        db,
+        org_id=org_id,
+        suggestion_id=sug.id,
+        team_id=team_id,
+        user_id=user_id,
+    )
     await collapse_notification(
         db,
         org_id=org_id,
         user_id=sug.created_by,
         kind="suggestion_response",
         post_id=sug.post_id,
-        payload={"suggestion_id": str(sug.id), "response": response},
+        payload={
+            "suggestion_id": str(sug.id),
+            "response": response,
+            "status": AWAITING,
+        },
     )
-    return _sug_resp(sug)
+    approved = await _approval_team_ids(db, suggestion_id=sug.id)
+    return _sug_resp(sug, approved_team_ids=approved)
+
+
+async def approve_suggestion(
+    db: AsyncSession,
+    *,
+    org_id: UUID,
+    team_id: UUID,
+    user_id: UUID,
+    suggestion_id: UUID,
+) -> SuggestionResponse:
+    """Either party team records approval; applies when both have approved."""
+    sug = await db.get(Suggestion, suggestion_id)
+    if sug is None or sug.org_id != org_id:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Suggestion not found"
+        )
+    if team_id not in (sug.proposer_team_id, sug.target_team_id):
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Suggestion not found"
+        )
+    if sug.status != AWAITING:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Suggestion is not awaiting dual approval",
+        )
+    await _record_approval(
+        db,
+        org_id=org_id,
+        suggestion_id=sug.id,
+        team_id=team_id,
+        user_id=user_id,
+    )
+    approved = await _approval_team_ids(db, suggestion_id=sug.id)
+    needed = {str(sug.proposer_team_id), str(sug.target_team_id)}
+    if needed.issubset(set(approved)):
+        await _apply_approved_change(db, org_id=org_id, sug=sug)
+        await collapse_notification(
+            db,
+            org_id=org_id,
+            user_id=sug.created_by,
+            kind="suggestion_applied",
+            post_id=sug.post_id,
+            payload={"suggestion_id": str(sug.id)},
+        )
+        # also notify target team lead via package creator if different
+        approved = await _approval_team_ids(db, suggestion_id=sug.id)
+    return _sug_resp(sug, approved_team_ids=approved)
+
+
+async def cancel_suggestion(
+    db: AsyncSession,
+    *,
+    org_id: UUID,
+    team_id: UUID,
+    suggestion_id: UUID,
+) -> SuggestionResponse:
+    """Proposer (Team B) withdraws an edit request before it is applied."""
+    sug = await db.get(Suggestion, suggestion_id)
+    if sug is None or sug.org_id != org_id or sug.proposer_team_id != team_id:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Suggestion not found"
+        )
+    if sug.status not in ("open", AWAITING):
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Can only cancel while open or awaiting approvals",
+        )
+    sug.status = CANCELLED
+    sug.updated_at = datetime.now(UTC)
+    await db.flush()
+
+    pkg = await db.get(Package, sug.package_id)
+    if pkg is not None:
+        await collapse_notification(
+            db,
+            org_id=org_id,
+            user_id=pkg.created_by,
+            kind="suggestion_cancelled",
+            post_id=sug.post_id,
+            payload={"suggestion_id": str(sug.id)},
+        )
+    approved = await _approval_team_ids(db, suggestion_id=sug.id)
+    return _sug_resp(sug, approved_team_ids=approved)
 
 
 async def close_suggestion(
@@ -322,11 +542,17 @@ async def close_suggestion(
     sug = await db.get(Suggestion, suggestion_id)
     if sug is None or sug.org_id != org_id or sug.proposer_team_id != team_id:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Suggestion not found")  # noqa: E501
+    if sug.status not in (APPLIED, "rejected", "closed"):
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Close after the change is applied (or rejected)",
+        )
     sug.closed_by_receiver = True
     sug.status = "closed"
     sug.updated_at = datetime.now(UTC)
     await db.flush()
-    return _sug_resp(sug)
+    approved = await _approval_team_ids(db, suggestion_id=sug.id)
+    return _sug_resp(sug, approved_team_ids=approved)
 
 
 async def create_review_action(
@@ -358,8 +584,8 @@ async def create_review_action(
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT, detail="review_action_exists"
         ) from exc
-    # FR-6.4 — mark sender-team decisions contested / open from post review
-    if action in ("request_changes", "blocked"):
+    # FR-6.4 — mark sender-team decisions contested / agreed from post review
+    if action in ("agree", "request_changes", "blocked"):
         from src.channels.models import Package
         from src.conflict.models import Decision
 
@@ -370,12 +596,17 @@ async def create_review_action(
                     select(Decision).where(
                         Decision.org_id == org_id,
                         Decision.team_id == pkg.team_id,
-                        Decision.status == "open",
+                        Decision.status.in_(("open", "proposed", "contested")),
                     )
                 )
             ).scalars().all()
             for d in decisions:
-                d.status = "contested"
+                if action == "agree":
+                    d.status = "agreed"
+                else:
+                    d.status = "contested"
+                if pkg.channel_id is not None and d.channel_id is None:
+                    d.channel_id = pkg.channel_id
             await db.flush()
     return ReviewActionResponse(
         id=str(row.id),

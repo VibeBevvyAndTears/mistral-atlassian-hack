@@ -61,6 +61,7 @@ class Suggestion(Base):
     )
     original_text: Mapped[str] = mapped_column(Text, nullable=False)
     adapted_preview: Mapped[str | None] = mapped_column(Text, nullable=True)
+    proposed_text: Mapped[str | None] = mapped_column(Text, nullable=True)
     target_node_id: Mapped[uuid_lib.UUID | None] = mapped_column(_Uuid, nullable=True)
     target_node_version: Mapped[int | None] = mapped_column(Integer, nullable=True)
     status: Mapped[str] = mapped_column(String(32), nullable=False, default="open", index=True)  # noqa: E501
@@ -69,12 +70,37 @@ class Suggestion(Base):
     responded_by: Mapped[uuid_lib.UUID | None] = mapped_column(_Uuid, nullable=True)
     responded_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)  # noqa: E501
     closed_by_receiver: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)  # noqa: E501
+    applied_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)  # noqa: E501
     payload: Mapped[dict[str, Any]] = mapped_column(_Json, nullable=False, default=dict)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False  # noqa: E501
+    )
+
+
+class SuggestionApproval(Base):
+    """One approval per team before a proposed suggestion change is applied."""
+
+    __tablename__ = "suggestion_approvals"
+    __table_args__ = (
+        UniqueConstraint("suggestion_id", "team_id", name="uq_suggestion_approvals_team"),  # noqa: E501
+    )
+
+    id: Mapped[uuid_lib.UUID] = mapped_column(_Uuid, primary_key=True, default=uuid_lib.uuid4)  # noqa: E501
+    org_id: Mapped[uuid_lib.UUID] = mapped_column(
+        _Uuid, ForeignKey("orgs.id", ondelete="CASCADE"), nullable=False
+    )
+    suggestion_id: Mapped[uuid_lib.UUID] = mapped_column(
+        _Uuid, ForeignKey("suggestions.id", ondelete="CASCADE"), nullable=False, index=True  # noqa: E501
+    )
+    team_id: Mapped[uuid_lib.UUID] = mapped_column(
+        _Uuid, ForeignKey("teams.id", ondelete="CASCADE"), nullable=False
+    )
+    user_id: Mapped[uuid_lib.UUID] = mapped_column(_Uuid, ForeignKey("users.id"), nullable=False)  # noqa: E501
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
     )
 
 
@@ -164,12 +190,16 @@ class SuggestionResponse(BaseModel):
     target_team_id: str
     original_text: str
     adapted_preview: str | None = None
+    proposed_text: str | None = None
     status: str
     response: str | None = None
     response_reason: str | None = None
     target_node_id: str | None = None
     target_node_version: int | None = None
     suggestion_type: SuggestionType | None = None
+    approved_team_ids: list[str] = Field(default_factory=list)
+    awaiting_team_ids: list[str] = Field(default_factory=list)
+    applied_at: datetime | None = None
     created_at: datetime
 
 
