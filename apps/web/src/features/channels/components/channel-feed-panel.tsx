@@ -1,9 +1,11 @@
 "use client";
 
+import { Info } from "@phosphor-icons/react";
 import { useCallback, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { AiPriorityInfoButton } from "@/features/channels/components/ai-priority-info-button";
 import { PostReviewActions } from "@/features/review/components/post-review-actions";
 import { apiClient } from "@/lib/api-client";
 
@@ -141,6 +143,7 @@ export function ChannelFeedPanel() {
                 <option value="oldest">Oldest</option>
               </select>
             </label>
+            <AiPriorityInfoButton />
             <label className="flex items-center gap-2 text-sm">
               <input
                 type="checkbox"
@@ -188,13 +191,25 @@ export function ChannelFeedPanel() {
                   className="w-full rounded-md border border-border px-3 py-2 text-left text-sm hover:bg-muted/40"
                   onClick={() => void openPost(p.id)}
                 >
-                  <span
-                    className="text-xs text-muted-foreground"
-                    title={p.ai_priority_reason ?? "No AI priority explanation"}
-                  >
-                    {p.ai_priority ?? "unprioritized"} · {p.created_at}
-                    {!p.is_read ? " · Unread" : ""}
-                    {p.updated_since_send ? " · Updated" : ""}
+                  <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
+                    <span
+                      title={p.ai_priority_reason ?? "No AI priority explanation"}
+                      className="inline-flex items-center gap-0.5"
+                    >
+                      {p.ai_priority ?? "unprioritized"}
+                      {p.ai_priority_reason ? (
+                        <Info
+                          className="size-3 shrink-0"
+                          weight="bold"
+                          aria-label={p.ai_priority_reason}
+                        />
+                      ) : null}
+                    </span>
+                    <span>
+                      · {p.created_at}
+                      {!p.is_read ? " · Unread" : ""}
+                      {p.updated_since_send ? " · Updated" : ""}
+                    </span>
                   </span>
                   {p.topic_tags.length ? (
                     <span className="ml-2 text-xs text-muted-foreground">

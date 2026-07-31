@@ -2,8 +2,9 @@
 
 import Link from "next/link";
 import { useParams, useSearchParams } from "next/navigation";
-import type { ReactNode } from "react";
+import { type ReactNode, useRef, useState } from "react";
 import { NotificationBell } from "@/features/teams/components/notification-bell";
+import { OpenOnYouToast } from "@/features/teams/components/open-on-you-toast";
 import { useTeamTenant } from "@/hooks/use-team-tenant";
 
 export function TeamShell({ children }: { children: ReactNode }) {
@@ -12,13 +13,15 @@ export function TeamShell({ children }: { children: ReactNode }) {
   const orgId = search.get("orgId");
   const teamId = params.teamId;
   const locale = params.locale;
+  const [bellOpen, setBellOpen] = useState(false);
+  const bellHostRef = useRef<HTMLDivElement>(null);
 
   useTeamTenant(orgId, teamId);
 
   const q = orgId ? `?orgId=${encodeURIComponent(orgId)}` : "";
 
   return (
-    <div className="mx-auto flex min-h-screen w-full max-w-3xl flex-col gap-6 p-6">
+    <div className="mx-auto flex min-h-screen w-full max-w-4xl flex-col gap-6 p-6">
       <header className="flex flex-wrap items-center gap-3 border-b border-border pb-4">
         <p className="font-medium tracking-tight">Cross-Team</p>
         <nav className="flex flex-wrap gap-2 text-sm">
@@ -92,7 +95,9 @@ export function TeamShell({ children }: { children: ReactNode }) {
             History
           </Link>
         </nav>
-        <NotificationBell />
+        <div ref={bellHostRef}>
+          <NotificationBell onOpenChange={setBellOpen} />
+        </div>
       </header>
       {!orgId ? (
         <p className="text-sm text-muted-foreground">
@@ -100,6 +105,14 @@ export function TeamShell({ children }: { children: ReactNode }) {
         </p>
       ) : null}
       {children}
+      {!bellOpen ? (
+        <OpenOnYouToast
+          onOpenNotifications={() => {
+            const button = bellHostRef.current?.querySelector("button");
+            button?.click();
+          }}
+        />
+      ) : null}
     </div>
   );
 }
