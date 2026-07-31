@@ -400,6 +400,134 @@ export const useRespondSuggestionApiSuggestionsSuggestionIdRespondPost = <TError
       return useMutation(useRespondSuggestionApiSuggestionsSuggestionIdRespondPostMutationOptions(options), queryClient);
     }
     /**
+ * Record this team's approval; applies when both teams have approved.
+ * @summary Approve Suggestion
+ */
+export const useApproveSuggestionApiSuggestionsSuggestionIdApprovePostHook = () => {
+        const approveSuggestionApiSuggestionsSuggestionIdApprovePost = useCustomInstance<SuggestionResponse>();
+
+        return useCallback((
+    suggestionId: string,
+ signal?: AbortSignal
+) => {
+        return approveSuggestionApiSuggestionsSuggestionIdApprovePost(
+          {url: `/api/suggestions/${suggestionId}/approve`, method: 'POST', signal
+    },
+          );
+        }, [approveSuggestionApiSuggestionsSuggestionIdApprovePost])
+      }
+
+
+
+export const useApproveSuggestionApiSuggestionsSuggestionIdApprovePostMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<ReturnType<typeof useApproveSuggestionApiSuggestionsSuggestionIdApprovePostHook>>>, TError,{suggestionId: string}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<ReturnType<typeof useApproveSuggestionApiSuggestionsSuggestionIdApprovePostHook>>>, TError,{suggestionId: string}, TContext> => {
+
+const mutationKey = ['approveSuggestionApiSuggestionsSuggestionIdApprovePost'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      const approveSuggestionApiSuggestionsSuggestionIdApprovePost =  useApproveSuggestionApiSuggestionsSuggestionIdApprovePostHook()
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<ReturnType<typeof useApproveSuggestionApiSuggestionsSuggestionIdApprovePostHook>>>, {suggestionId: string}> = (props) => {
+          const {suggestionId} = props ?? {};
+
+          return  approveSuggestionApiSuggestionsSuggestionIdApprovePost(suggestionId,)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type ApproveSuggestionApiSuggestionsSuggestionIdApprovePostMutationResult = NonNullable<Awaited<ReturnType<ReturnType<typeof useApproveSuggestionApiSuggestionsSuggestionIdApprovePostHook>>>>
+
+    export type ApproveSuggestionApiSuggestionsSuggestionIdApprovePostMutationError = HTTPValidationError
+
+    /**
+ * @summary Approve Suggestion
+ */
+export const useApproveSuggestionApiSuggestionsSuggestionIdApprovePost = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<ReturnType<typeof useApproveSuggestionApiSuggestionsSuggestionIdApprovePostHook>>>, TError,{suggestionId: string}, TContext>, }
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<ReturnType<typeof useApproveSuggestionApiSuggestionsSuggestionIdApprovePostHook>>>,
+        TError,
+        {suggestionId: string},
+        TContext
+      > => {
+      return useMutation(useApproveSuggestionApiSuggestionsSuggestionIdApprovePostMutationOptions(options), queryClient);
+    }
+    /**
+ * Proposer withdraws the edit request (open or awaiting approvals only).
+ * @summary Cancel Suggestion
+ */
+export const useCancelSuggestionApiSuggestionsSuggestionIdCancelPostHook = () => {
+        const cancelSuggestionApiSuggestionsSuggestionIdCancelPost = useCustomInstance<SuggestionResponse>();
+
+        return useCallback((
+    suggestionId: string,
+ signal?: AbortSignal
+) => {
+        return cancelSuggestionApiSuggestionsSuggestionIdCancelPost(
+          {url: `/api/suggestions/${suggestionId}/cancel`, method: 'POST', signal
+    },
+          );
+        }, [cancelSuggestionApiSuggestionsSuggestionIdCancelPost])
+      }
+
+
+
+export const useCancelSuggestionApiSuggestionsSuggestionIdCancelPostMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<ReturnType<typeof useCancelSuggestionApiSuggestionsSuggestionIdCancelPostHook>>>, TError,{suggestionId: string}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<ReturnType<typeof useCancelSuggestionApiSuggestionsSuggestionIdCancelPostHook>>>, TError,{suggestionId: string}, TContext> => {
+
+const mutationKey = ['cancelSuggestionApiSuggestionsSuggestionIdCancelPost'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      const cancelSuggestionApiSuggestionsSuggestionIdCancelPost =  useCancelSuggestionApiSuggestionsSuggestionIdCancelPostHook()
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<ReturnType<typeof useCancelSuggestionApiSuggestionsSuggestionIdCancelPostHook>>>, {suggestionId: string}> = (props) => {
+          const {suggestionId} = props ?? {};
+
+          return  cancelSuggestionApiSuggestionsSuggestionIdCancelPost(suggestionId,)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CancelSuggestionApiSuggestionsSuggestionIdCancelPostMutationResult = NonNullable<Awaited<ReturnType<ReturnType<typeof useCancelSuggestionApiSuggestionsSuggestionIdCancelPostHook>>>>
+
+    export type CancelSuggestionApiSuggestionsSuggestionIdCancelPostMutationError = HTTPValidationError
+
+    /**
+ * @summary Cancel Suggestion
+ */
+export const useCancelSuggestionApiSuggestionsSuggestionIdCancelPost = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<ReturnType<typeof useCancelSuggestionApiSuggestionsSuggestionIdCancelPostHook>>>, TError,{suggestionId: string}, TContext>, }
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<ReturnType<typeof useCancelSuggestionApiSuggestionsSuggestionIdCancelPostHook>>>,
+        TError,
+        {suggestionId: string},
+        TContext
+      > => {
+      return useMutation(useCancelSuggestionApiSuggestionsSuggestionIdCancelPostMutationOptions(options), queryClient);
+    }
+    /**
  * @summary Close Suggestion
  */
 export const useCloseSuggestionApiSuggestionsSuggestionIdClosePostHook = () => {
