@@ -8,6 +8,7 @@ import { type AbstractIntlMessages, NextIntlClientProvider } from "next-intl";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
 import type { ReactNode } from "react";
 import { useEffect } from "react";
+import { TenantProvider } from "@/components/domain/tenant-provider";
 import { env } from "@/config/env";
 import {
   exchangeOAuthForBackendJwt,
@@ -66,7 +67,7 @@ export function Providers({ children, locale, messages }: ProvidersProps) {
           <JotaiProvider>
             <BackendJwtBridge />
             <NextIntlClientProvider locale={locale} messages={messages} timeZone="Asia/Seoul">
-              {children}
+              <TenantProvider>{children}</TenantProvider>
             </NextIntlClientProvider>
           </JotaiProvider>
           <TanStackDevTools />

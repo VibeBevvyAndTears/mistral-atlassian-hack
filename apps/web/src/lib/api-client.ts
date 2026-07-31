@@ -10,6 +10,15 @@ export const apiClient = axios.create({
   },
 });
 
+/** Mutable tenancy headers stamped by TenantProvider (X-Org-Id / X-Team-Id). */
+let tenantOrgId: string | null = null;
+let tenantTeamId: string | null = null;
+
+export function setTenantHeaders(orgId: string | null, teamId: string | null) {
+  tenantOrgId = orgId;
+  tenantTeamId = teamId;
+}
+
 let isRefreshing = false;
 let refreshSubscribers: ((token: string) => void)[] = [];
 
@@ -29,6 +38,12 @@ apiClient.interceptors.request.use((config) => {
   if (token && config.headers) {
     config.headers.Authorization = `Bearer ${token}`;
   }
+  if (tenantOrgId && config.headers) {
+    config.headers["X-Org-Id"] = tenantOrgId;
+  }
+  if (tenantTeamId && config.headers) {
+    config.headers["X-Team-Id"] = tenantTeamId;
+  }
   return config;
 });
 
@@ -36,6 +51,17 @@ apiClient.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
+
+    if (
+      error.response?.status === 403 &&
+      error.response?.data?.detail === "team_membership_revoked"
+    ) {
+      clearTokens();
+      if (typeof window !== "undefined") {
+        window.location.href = "/login";
+      }
+      return Promise.reject(error);
+    }
 
     if (error.response?.status === 401 && originalRequest && !originalRequest._retry) {
       const refreshToken = getRefreshToken();
