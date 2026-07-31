@@ -397,10 +397,13 @@ def test_c6_view_source_endpoint(client: TestClient) -> None:
     assert body["package_title"] == "Spec pack"
     assert any(d["id"] == str(doc_id) and d["filename"] == "spec.txt" for d in body["documents"])  # noqa: E501
     ui = open(  # noqa: SIM115
-        "/Users/tinnapatplangsri/Code/mistral-atlassian-hack/apps/web/src/features/channels/components/channel-feed-panel.tsx",
+        "/Users/tinnapatplangsri/Code/mistral-atlassian-hack/apps/web/src/features/channels/components/channel-post-detail-card.tsx",
         encoding="utf-8",
     ).read()
     assert "openSources" in ui
+    assert "View source" in ui
+    assert "History" in ui
+    assert "Topics from sender nodes" in ui
     assert "originating package/docs for post" not in ui
 
 

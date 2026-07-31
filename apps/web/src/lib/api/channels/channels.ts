@@ -36,6 +36,7 @@ import {
 } from 'react';
 
 import type {
+  ChannelPostsPage,
   ChannelResponse,
   EnsureChannelBody,
   HTTPValidationError,
@@ -687,7 +688,7 @@ export const useSendPackageApiPackagesPackageIdSendPost = <TError = HTTPValidati
  * @summary List Posts
  */
 export const useListPostsApiChannelsChannelIdPostsGetHook = () => {
-        const listPostsApiChannelsChannelIdPostsGet = useCustomInstance<PostResponse[]>();
+        const listPostsApiChannelsChannelIdPostsGet = useCustomInstance<ChannelPostsPage>();
 
         return useCallback((
     channelId: string,

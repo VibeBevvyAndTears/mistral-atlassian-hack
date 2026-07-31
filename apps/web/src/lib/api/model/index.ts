@@ -7,6 +7,7 @@
 
 export * from './admin-metrics-response';
 export * from './body-upload-document-api-teams-team-id-documents-post';
+export * from './channel-posts-page';
 export * from './channel-response';
 export * from './comment-create';
 export * from './comment-response';

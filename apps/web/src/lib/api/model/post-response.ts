@@ -11,6 +11,7 @@ export interface PostResponse {
   id: string;
   channel_id: string;
   package_id: string;
+  package_title?: string | null;
   version: number;
   adapted_body: string;
   original_body: string;
@@ -23,5 +24,9 @@ export interface PostResponse {
   updated_since_send?: boolean;
   is_read?: boolean;
   judge?: JudgeSummary | null;
+  sender_team_id?: string | null;
+  sender_team_name?: string | null;
+  sender_name?: string | null;
   created_at: string;
+  search_score?: number | null;
 }

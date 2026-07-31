@@ -153,11 +153,20 @@ export const ListPostsApiChannelsChannelIdPostsGetParams = zod.object({
 
 export const listPostsApiChannelsChannelIdPostsGetQuerySortDefault = `newest`;
 export const listPostsApiChannelsChannelIdPostsGetQueryUnreadOnlyDefault = false;
+export const listPostsApiChannelsChannelIdPostsGetQueryPageDefault = 1;
+
+export const listPostsApiChannelsChannelIdPostsGetQueryPageSizeDefault = 10;
+export const listPostsApiChannelsChannelIdPostsGetQueryPageSizeMax = 50;
+
+
 
 export const ListPostsApiChannelsChannelIdPostsGetQueryParams = zod.object({
   "sort": zod.enum(['priority', 'newest', 'oldest']).default(listPostsApiChannelsChannelIdPostsGetQuerySortDefault),
   "unread_only": zod.boolean().default(listPostsApiChannelsChannelIdPostsGetQueryUnreadOnlyDefault),
-  "topic_tags": zod.union([zod.string(),zod.null()]).optional()
+  "topic_tags": zod.union([zod.string(),zod.null()]).optional(),
+  "q": zod.union([zod.string(),zod.null()]).optional().describe('Search posts in this channel'),
+  "page": zod.number().min(1).default(listPostsApiChannelsChannelIdPostsGetQueryPageDefault),
+  "page_size": zod.number().min(1).max(listPostsApiChannelsChannelIdPostsGetQueryPageSizeMax).default(listPostsApiChannelsChannelIdPostsGetQueryPageSizeDefault)
 })
 
 export const ListPostsApiChannelsChannelIdPostsGetHeader = zod.object({
@@ -165,13 +174,15 @@ export const ListPostsApiChannelsChannelIdPostsGetHeader = zod.object({
   "X-Team-Id": zod.union([zod.string(),zod.null()]).optional()
 })
 
-export const listPostsApiChannelsChannelIdPostsGetResponseUpdatedSinceSendDefault = false;
-export const listPostsApiChannelsChannelIdPostsGetResponseIsReadDefault = false;
+export const listPostsApiChannelsChannelIdPostsGetResponseItemsItemUpdatedSinceSendDefault = false;
+export const listPostsApiChannelsChannelIdPostsGetResponseItemsItemIsReadDefault = false;
 
-export const ListPostsApiChannelsChannelIdPostsGetResponseItem = zod.object({
+export const ListPostsApiChannelsChannelIdPostsGetResponse = zod.object({
+  "items": zod.array(zod.object({
   "id": zod.string(),
   "channel_id": zod.string(),
   "package_id": zod.string(),
+  "package_title": zod.union([zod.string(),zod.null()]).optional(),
   "version": zod.number(),
   "adapted_body": zod.string(),
   "original_body": zod.string(),
@@ -181,17 +192,26 @@ export const ListPostsApiChannelsChannelIdPostsGetResponseItem = zod.object({
   "topic_tags": zod.array(zod.string()).optional(),
   "bypassed_checks": zod.array(zod.string()).optional(),
   "attached_conflicts": zod.array(zod.record(zod.string(), zod.unknown())).optional(),
-  "updated_since_send": zod.boolean().default(listPostsApiChannelsChannelIdPostsGetResponseUpdatedSinceSendDefault),
-  "is_read": zod.boolean().default(listPostsApiChannelsChannelIdPostsGetResponseIsReadDefault),
+  "updated_since_send": zod.boolean().default(listPostsApiChannelsChannelIdPostsGetResponseItemsItemUpdatedSinceSendDefault),
+  "is_read": zod.boolean().default(listPostsApiChannelsChannelIdPostsGetResponseItemsItemIsReadDefault),
   "judge": zod.union([zod.object({
   "fidelity": zod.union([zod.string(),zod.null()]).optional(),
   "fit": zod.union([zod.string(),zod.null()]).optional(),
   "overall_confidence": zod.union([zod.number(),zod.null()]).optional(),
   "badge": zod.union([zod.string(),zod.null()]).optional()
 }),zod.null()]).optional(),
-  "created_at": zod.iso.datetime({})
-})
-export const ListPostsApiChannelsChannelIdPostsGetResponse = zod.array(ListPostsApiChannelsChannelIdPostsGetResponseItem)
+  "sender_team_id": zod.union([zod.string(),zod.null()]).optional(),
+  "sender_team_name": zod.union([zod.string(),zod.null()]).optional(),
+  "sender_name": zod.union([zod.string(),zod.null()]).optional(),
+  "created_at": zod.iso.datetime({}),
+  "search_score": zod.union([zod.number(),zod.null()]).optional()
+})).optional(),
+  "total": zod.number(),
+  "page": zod.number(),
+  "page_size": zod.number(),
+  "total_pages": zod.number(),
+  "q": zod.union([zod.string(),zod.null()]).optional()
+}).describe('Paginated channel feed (search + page).')
 
 /**
  * @summary Get Post
@@ -212,6 +232,7 @@ export const GetPostApiPostsPostIdGetResponse = zod.object({
   "id": zod.string(),
   "channel_id": zod.string(),
   "package_id": zod.string(),
+  "package_title": zod.union([zod.string(),zod.null()]).optional(),
   "version": zod.number(),
   "adapted_body": zod.string(),
   "original_body": zod.string(),
@@ -229,7 +250,11 @@ export const GetPostApiPostsPostIdGetResponse = zod.object({
   "overall_confidence": zod.union([zod.number(),zod.null()]).optional(),
   "badge": zod.union([zod.string(),zod.null()]).optional()
 }),zod.null()]).optional(),
-  "created_at": zod.iso.datetime({})
+  "sender_team_id": zod.union([zod.string(),zod.null()]).optional(),
+  "sender_team_name": zod.union([zod.string(),zod.null()]).optional(),
+  "sender_name": zod.union([zod.string(),zod.null()]).optional(),
+  "created_at": zod.iso.datetime({}),
+  "search_score": zod.union([zod.number(),zod.null()]).optional()
 })
 
 /**
@@ -295,6 +320,7 @@ export const MarkPostReadApiPostsPostIdReadPostResponse = zod.object({
   "id": zod.string(),
   "channel_id": zod.string(),
   "package_id": zod.string(),
+  "package_title": zod.union([zod.string(),zod.null()]).optional(),
   "version": zod.number(),
   "adapted_body": zod.string(),
   "original_body": zod.string(),
@@ -312,6 +338,10 @@ export const MarkPostReadApiPostsPostIdReadPostResponse = zod.object({
   "overall_confidence": zod.union([zod.number(),zod.null()]).optional(),
   "badge": zod.union([zod.string(),zod.null()]).optional()
 }),zod.null()]).optional(),
-  "created_at": zod.iso.datetime({})
+  "sender_team_id": zod.union([zod.string(),zod.null()]).optional(),
+  "sender_team_name": zod.union([zod.string(),zod.null()]).optional(),
+  "sender_name": zod.union([zod.string(),zod.null()]).optional(),
+  "created_at": zod.iso.datetime({}),
+  "search_score": zod.union([zod.number(),zod.null()]).optional()
 })
 

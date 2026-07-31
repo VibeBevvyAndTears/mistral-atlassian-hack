@@ -10,4 +10,17 @@ export type ListPostsApiChannelsChannelIdPostsGetParams = {
 sort?: ListPostsApiChannelsChannelIdPostsGetSort;
 unread_only?: boolean;
 topic_tags?: string | null;
+/**
+ * Search posts in this channel
+ */
+q?: string | null;
+/**
+ * @minimum 1
+ */
+page?: number;
+/**
+ * @minimum 1
+ * @maximum 50
+ */
+page_size?: number;
 };
