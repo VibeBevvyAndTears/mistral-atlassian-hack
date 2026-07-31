@@ -80,6 +80,8 @@ def _seed_post_with_node(
     node_id = uuid.uuid4()
 
     async def _run() -> None:
+        from src.channels.models import Package
+
         async with async_session_factory() as session:
             session.add(
                 Post(
@@ -104,6 +106,9 @@ def _seed_post_with_node(
                     search_text="Ship date We ship Friday",
                 )
             )
+            pkg = await session.get(Package, UUID(package_id))
+            assert pkg is not None
+            pkg.included_node_ids = [str(node_id)]
             await session.commit()
 
     asyncio.run(_run())
