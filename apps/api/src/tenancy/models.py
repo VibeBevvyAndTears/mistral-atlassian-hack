@@ -258,7 +258,7 @@ class ProfileResponse(BaseModel):
 
 
 class ProfileDraftRequest(BaseModel):
-    document_id: uuid_lib.UUID
+    document_ids: list[uuid_lib.UUID] = Field(min_length=1, max_length=3)
 
 
 class ProfileDraftData(BaseModel):
@@ -270,9 +270,15 @@ class ProfileDraftData(BaseModel):
 
 
 class ProfileDraftResponse(BaseModel):
-    document_id: str
+    document_ids: list[str]
     data: ProfileDraftData
     generated_by: Literal["mistral", "deterministic_stub"]
+
+
+class ProfileVersionSummary(BaseModel):
+    version: int
+    created_at: datetime
+    created_by: str
 
 
 class DocumentResponse(BaseModel):

@@ -117,7 +117,7 @@ def test_profile_draft_stub_and_admin_metrics(client: TestClient) -> None:
 
     draft = client.post(
         f"/api/teams/{t['team']}/profile/draft-from-document",
-        json={"document_id": doc_id},
+        json={"document_ids": [doc_id]},
         headers=_auth(t["token"], t["org"], t["team"]),
     )
     assert draft.status_code == 200, draft.text
