@@ -25,6 +25,9 @@ class Org(Base):
         _Uuid, primary_key=True, default=uuid_lib.uuid4
     )
     name: Mapped[str] = mapped_column(String(255), nullable=False)
+    archived_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )
@@ -61,6 +64,9 @@ class Team(Base):
         _Uuid, ForeignKey("orgs.id", ondelete="CASCADE"), nullable=False, index=True
     )
     name: Mapped[str] = mapped_column(String(255), nullable=False)
+    archived_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )
@@ -196,6 +202,19 @@ class OrgResponse(BaseModel):
     id: str
     name: str
     created_at: datetime
+
+
+class MyTeamMembership(BaseModel):
+    team_id: str
+    team_name: str
+    role: str
+
+
+class MyOrgMembership(BaseModel):
+    org_id: str
+    org_name: str
+    role: str
+    teams: list[MyTeamMembership]
 
 
 class AdminMetricsResponse(BaseModel):

@@ -39,6 +39,20 @@ async def create_team(
     )
 
 
+@router.post("/teams/{team_id}/archive", status_code=status.HTTP_204_NO_CONTENT)
+async def archive_team(
+    team_id: UUID,
+    scope: TenantScopeDep,
+    db: DBSession,
+) -> None:
+    """Archive a team — its own lead only. Reversible: data is kept, just hidden."""
+    if scope.team_id != team_id:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Team not found")  # noqa: E501
+    await teams_service.archive_team(
+        db, team_id=team_id, org_id=scope.org_id, actor_role=scope.role
+    )
+
+
 @router.post(
     "/teams/{team_id}/invites",
     response_model=InviteResponse,

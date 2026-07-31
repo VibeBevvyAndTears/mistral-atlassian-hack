@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import secrets
 import uuid
+from datetime import UTC, datetime
 from uuid import UUID
 
 from fastapi import HTTPException, status
@@ -48,6 +49,21 @@ async def create_team(
     return TeamResponse(
         id=str(team.id), org_id=str(team.org_id), name=team.name, created_at=team.created_at  # noqa: E501
     )
+
+
+async def archive_team(
+    db: AsyncSession, *, team_id: UUID, org_id: UUID, actor_role: str
+) -> None:
+    if actor_role != "lead":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only this team's lead can archive it.",
+        )
+    team = await db.get(Team, team_id)
+    if team is None or team.org_id != org_id:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Team not found")  # noqa: E501
+    team.archived_at = datetime.now(UTC)
+    await db.flush()
 
 
 async def _resolve_invite_email(
