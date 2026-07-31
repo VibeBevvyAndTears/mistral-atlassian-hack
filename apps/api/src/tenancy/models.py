@@ -25,6 +25,9 @@ class Org(Base):
         _Uuid, primary_key=True, default=uuid_lib.uuid4
     )
     name: Mapped[str] = mapped_column(String(255), nullable=False)
+    archived_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )
@@ -61,6 +64,9 @@ class Team(Base):
         _Uuid, ForeignKey("orgs.id", ondelete="CASCADE"), nullable=False, index=True
     )
     name: Mapped[str] = mapped_column(String(255), nullable=False)
+    archived_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )
@@ -198,6 +204,19 @@ class OrgResponse(BaseModel):
     created_at: datetime
 
 
+class MyTeamMembership(BaseModel):
+    team_id: str
+    team_name: str
+    role: str
+
+
+class MyOrgMembership(BaseModel):
+    org_id: str
+    org_name: str
+    role: str
+    teams: list[MyTeamMembership]
+
+
 class AdminMetricsResponse(BaseModel):
     trace_count: int
     total_cost_usd: float
@@ -258,7 +277,7 @@ class ProfileResponse(BaseModel):
 
 
 class ProfileDraftRequest(BaseModel):
-    document_id: uuid_lib.UUID
+    document_ids: list[uuid_lib.UUID] = Field(min_length=1, max_length=3)
 
 
 class ProfileDraftData(BaseModel):
@@ -270,9 +289,15 @@ class ProfileDraftData(BaseModel):
 
 
 class ProfileDraftResponse(BaseModel):
-    document_id: str
+    document_ids: list[str]
     data: ProfileDraftData
     generated_by: Literal["mistral", "deterministic_stub"]
+
+
+class ProfileVersionSummary(BaseModel):
+    version: int
+    created_at: datetime
+    created_by: str
 
 
 class DocumentResponse(BaseModel):

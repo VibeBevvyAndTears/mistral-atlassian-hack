@@ -13,6 +13,7 @@ from src.tenancy.models import (
     ProfileDraftRequest,
     ProfileDraftResponse,
     ProfileResponse,
+    ProfileVersionSummary,
 )
 
 router = APIRouter()
@@ -72,6 +73,43 @@ async def draft_profile_from_document(
         db,
         team_id=team_id,
         org_id=scope.org_id,
-        document_id=body.document_id,
+        document_ids=body.document_ids,
         actor_role=scope.role,
+    )
+
+
+@router.get(
+    "/teams/{team_id}/profile/versions",
+    response_model=list[ProfileVersionSummary],
+)
+async def list_profile_versions(
+    team_id: UUID,
+    scope: TenantScopeDep,
+    db: DBSession,
+) -> list[ProfileVersionSummary]:
+    if scope.team_id != team_id:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Team not found"
+        )
+    return await profiles_service.list_profile_versions(
+        db, team_id=team_id, org_id=scope.org_id
+    )
+
+
+@router.get(
+    "/teams/{team_id}/profile/versions/{version}",
+    response_model=ProfileResponse,
+)
+async def get_profile_version(
+    team_id: UUID,
+    version: int,
+    scope: TenantScopeDep,
+    db: DBSession,
+) -> ProfileResponse:
+    if scope.team_id != team_id:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Team not found"
+        )
+    return await profiles_service.get_profile_version(
+        db, team_id=team_id, org_id=scope.org_id, version=version
     )

@@ -240,7 +240,7 @@ def test_profile_draft_stub_and_admin_metrics(client: TestClient) -> None:
 
     draft = client.post(
         f"/api/teams/{t['team']}/profile/draft-from-document",
-        json={"document_id": doc_id},
+        json={"document_ids": [doc_id]},
         headers=_auth(t["token"], t["org"], t["team"]),
     )
     assert draft.status_code == 200, draft.text
@@ -255,6 +255,25 @@ def test_profile_draft_stub_and_admin_metrics(client: TestClient) -> None:
     assert "trace_count" in body
     assert "post_count" in body
     assert "suggestion_count" in body
+
+
+def test_list_my_orgs(client: TestClient) -> None:
+    t = _team(client)
+
+    mine = client.get("/api/orgs", headers=_auth(t["token"]))
+    assert mine.status_code == 200, mine.text
+    orgs = mine.json()
+    assert len(orgs) == 1
+    assert orgs[0]["org_id"] == t["org"]
+    assert orgs[0]["role"] == "owner"
+    assert len(orgs[0]["teams"]) == 1
+    assert orgs[0]["teams"][0]["team_id"] == t["team"]
+    assert orgs[0]["teams"][0]["role"] == "lead"
+
+    other_token = _register(client, f"m6-other-{uuid.uuid4().hex[:8]}@example.com")
+    empty = client.get("/api/orgs", headers=_auth(other_token))
+    assert empty.status_code == 200, empty.text
+    assert empty.json() == []
 
 
 def test_post_history_panel_api(client: TestClient) -> None:

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import secrets
 import uuid
+from datetime import UTC, datetime
 from uuid import UUID
 
 from fastapi import HTTPException, status
@@ -48,6 +49,21 @@ async def create_team(
     return TeamResponse(
         id=str(team.id), org_id=str(team.org_id), name=team.name, created_at=team.created_at  # noqa: E501
     )
+
+
+async def archive_team(
+    db: AsyncSession, *, team_id: UUID, org_id: UUID, actor_role: str
+) -> None:
+    if actor_role != "lead":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only this team's lead can archive it.",
+        )
+    team = await db.get(Team, team_id)
+    if team is None or team.org_id != org_id:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Team not found")  # noqa: E501
+    team.archived_at = datetime.now(UTC)
+    await db.flush()
 
 
 async def _resolve_invite_email(
@@ -168,6 +184,37 @@ async def _ensure_memberships(
     if team_member is None:
         db.add(TeamMember(team_id=team_id, user_id=user_id, role=role))
     await db.flush()
+
+
+async def accept_pending_invites_for_email(
+    db: AsyncSession, *, user_id: UUID, email: str
+) -> None:
+    """Auto-apply invites already waiting for this email — runs at registration.
+
+    An invite for an email that already has an account is applied immediately
+    by ``create_invite`` (see ``added_immediately``). This covers the other
+    order: the invite was created before the invitee ever signed up, so it
+    would otherwise sit unused until someone manually pastes its token into
+    ``accept_invite``.
+    """
+    normalized = normalize_email(email)
+    now = datetime.now(UTC)
+    invites = (
+        await db.execute(select(Invite).where(Invite.email == normalized))
+    ).scalars().all()
+    for invite in invites:
+        if invite.expires_at is not None and invite.expires_at < now:
+            continue
+        team = await db.get(Team, invite.team_id)
+        if team is None:
+            continue
+        await _ensure_memberships(
+            db,
+            org_id=team.org_id,
+            team_id=team.id,
+            user_id=user_id,
+            role=invite.role,
+        )
 
 
 async def accept_invite(

@@ -68,7 +68,7 @@ export function OnboardingForm() {
   }
 
   return (
-    <Card className="mx-auto mt-16 w-full max-w-md">
+    <Card>
       <CardHeader>
         <CardTitle>Create org & team</CardTitle>
       </CardHeader>

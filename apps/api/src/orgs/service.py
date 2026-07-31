@@ -3,8 +3,10 @@
 from __future__ import annotations
 
 import uuid
+from datetime import UTC, datetime
 from uuid import UUID
 
+from fastapi import HTTPException, status
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -13,7 +15,16 @@ from src.conflict.models import ReviewItem
 from src.graph.models import AgentTraceRow
 from src.jobs.queue import JobQueue
 from src.review.models import Suggestion
-from src.tenancy.models import AdminMetricsResponse, Org, OrgMember, OrgResponse
+from src.tenancy.models import (
+    AdminMetricsResponse,
+    MyOrgMembership,
+    MyTeamMembership,
+    Org,
+    OrgMember,
+    OrgResponse,
+    Team,
+    TeamMember,
+)
 
 
 async def create_org(db: AsyncSession, *, user_id: UUID, name: str) -> OrgResponse:
@@ -22,6 +33,61 @@ async def create_org(db: AsyncSession, *, user_id: UUID, name: str) -> OrgRespon
     db.add(OrgMember(org_id=org.id, user_id=user_id, role="owner"))
     await db.flush()
     return OrgResponse(id=str(org.id), name=org.name, created_at=org.created_at)
+
+
+async def archive_org(db: AsyncSession, *, org_id: UUID, actor_role: str) -> None:
+    if actor_role != "owner":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only the org owner can archive this organization.",
+        )
+    org = await db.get(Org, org_id)
+    if org is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Organization not found"
+        )
+    org.archived_at = datetime.now(UTC)
+    await db.flush()
+
+
+async def list_my_orgs(db: AsyncSession, *, user_id: UUID) -> list[MyOrgMembership]:
+    org_rows = (
+        await db.execute(
+            select(Org.id, Org.name, OrgMember.role)
+            .join(OrgMember, OrgMember.org_id == Org.id)
+            .where(OrgMember.user_id == user_id, Org.archived_at.is_(None))
+            .order_by(Org.name)
+        )
+    ).all()
+
+    memberships: list[MyOrgMembership] = []
+    for org_id, org_name, org_role in org_rows:
+        team_rows = (
+            await db.execute(
+                select(Team.id, Team.name, TeamMember.role)
+                .join(TeamMember, TeamMember.team_id == Team.id)
+                .where(
+                    Team.org_id == org_id,
+                    TeamMember.user_id == user_id,
+                    Team.archived_at.is_(None),
+                )
+                .order_by(Team.name)
+            )
+        ).all()
+        memberships.append(
+            MyOrgMembership(
+                org_id=str(org_id),
+                org_name=org_name,
+                role=org_role,
+                teams=[
+                    MyTeamMembership(
+                        team_id=str(team_id), team_name=team_name, role=team_role
+                    )
+                    for team_id, team_name, team_role in team_rows
+                ],
+            )
+        )
+    return memberships
 
 
 async def get_org_member_role(

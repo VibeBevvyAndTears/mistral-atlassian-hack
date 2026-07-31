@@ -22,6 +22,7 @@ from src.lib.auth import (
 from src.lib.dependencies import DBSession
 from src.lib.rate_limit import rate_limit
 from src.lib.token_store import revoke, revoke_if_not_revoked
+from src.teams.service import accept_pending_invites_for_email
 from src.users.model import User, UserResponse
 
 router = APIRouter()
@@ -118,6 +119,7 @@ async def register(
         email_verified=False,
         password_hash=hash_password(body.password),
     )
+    await accept_pending_invites_for_email(db, user_id=user.id, email=user.email)
 
     return _issue_tokens(user)
 
