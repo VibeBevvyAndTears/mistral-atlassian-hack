@@ -1,0 +1,15 @@
+{
+  "email": "demo-conflict-81e8b5ca@example.com",
+  "password": "password123",
+  "org_id": "fbfae41f-9980-4133-97a2-b587a75f267c",
+  "team_a_id": "093ceeb3-a946-4576-8ab4-972bad677b78",
+  "team_b_id": "e5e2cd06-434a-449b-bc8f-34af267c0091",
+  "post_id": "707793e8-9804-4ec9-b24b-1d7efa2ad48d",
+  "suggestion_id": "58c191f2-c2d5-480d-9260-591dc3f2b76d",
+  "node_id": "ae2cd048-629c-4cd1-b680-f64f871cbd9e",
+  "dual_team_approve_before_apply": true,
+  "web_urls": {
+    "team_a_suggestions": "http://localhost:3000/en/teams/093ceeb3-a946-4576-8ab4-972bad677b78/suggestions?orgId=fbfae41f-9980-4133-97a2-b587a75f267c",
+    "team_b_channels": "http://localhost:3000/en/teams/e5e2cd06-434a-449b-bc8f-34af267c0091/channels?orgId=fbfae41f-9980-4133-97a2-b587a75f267c"
+  }
+}

@@ -1,0 +1,3 @@
+Ship plan for Team A → Team B handoff.
+We release Friday. Rollback window is 2 hours.
+Owner: platform lead. Risk: dependency on auth service.

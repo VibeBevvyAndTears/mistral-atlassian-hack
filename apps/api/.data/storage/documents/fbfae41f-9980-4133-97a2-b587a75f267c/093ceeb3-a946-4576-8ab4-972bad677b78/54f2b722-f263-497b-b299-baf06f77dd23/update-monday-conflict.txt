@@ -1,0 +1,6 @@
+Update to Team A release plan — conflicts with the existing Friday decision.
+
+Earlier approved plan: We will ship on Friday.
+Correction / new decision: The release date is Monday; Friday is cancelled.
+Constraint: Friday ship is no longer valid.
+Risk: Marketing already announced Friday — must be corrected before handoff to Team B.

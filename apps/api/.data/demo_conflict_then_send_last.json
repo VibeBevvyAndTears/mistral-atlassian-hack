@@ -1,0 +1,38 @@
+{
+  "api_base": "http://127.0.0.1:8000",
+  "email": "demo-conflict-3eaec52b@example.com",
+  "username": "demo_conflict_3eaec52b",
+  "password": "password123",
+  "org_id": "266084b9-69b0-472a-94ae-8f2327690a77",
+  "team_a_id": "68b5b16b-772b-4180-890e-3f068cc54c8f",
+  "team_b_id": "f1047e30-188f-4844-b64b-300c7a61acc7",
+  "channel_id": "1e8dd0f7-132e-4d6c-a03e-d83868de2aa7",
+  "package_id": "24277e9f-b699-4e0d-88a4-c5e079afd800",
+  "document_ids": {
+    "baseline": "d65815ca-3496-4d53-99b4-bc3492367fb8",
+    "conflict_update": "502c796e-4050-48d1-9002-f52ba441ff6e"
+  },
+  "resolved_review_item_ids": [
+    "44d40770-2b17-4711-b863-588857b2011d",
+    "af9dbbb7-e170-44ec-92cb-8d0ad73bf9f5",
+    "7621b1ed-ab81-4eef-95d6-5bd6541b358e",
+    "f30dfe0c-6149-4ad5-a71b-e87bd8a34dbb",
+    "9c3541c7-e86b-4012-8c2f-80d4ee14ae28",
+    "3f44b1fc-171c-4de2-a31b-6dd1a1c0f009",
+    "61cbc0db-3325-49d7-8ab8-d91b6321d0ef"
+  ],
+  "blocked_package_id": "d49a8c6b-ad6a-47fe-933b-b60bb8a35265",
+  "posts": [
+    {
+      "id": "bc17bcf6-ee11-4fd4-9f28-8539ac4a15d5",
+      "ai_priority": "p2"
+    }
+  ],
+  "web_urls": {
+    "login": "http://localhost:3000/en/login",
+    "team_a_documents": "http://localhost:3000/en/teams/68b5b16b-772b-4180-890e-3f068cc54c8f/documents?orgId=266084b9-69b0-472a-94ae-8f2327690a77",
+    "team_a_conflicts": "http://localhost:3000/en/teams/68b5b16b-772b-4180-890e-3f068cc54c8f/review-items?orgId=266084b9-69b0-472a-94ae-8f2327690a77",
+    "team_a_compose": "http://localhost:3000/en/teams/68b5b16b-772b-4180-890e-3f068cc54c8f/compose?orgId=266084b9-69b0-472a-94ae-8f2327690a77",
+    "team_b_channels": "http://localhost:3000/en/teams/f1047e30-188f-4844-b64b-300c7a61acc7/channels?orgId=266084b9-69b0-472a-94ae-8f2327690a77"
+  }
+}

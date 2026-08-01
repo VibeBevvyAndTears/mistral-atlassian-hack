@@ -1,0 +1,60 @@
+{
+  "email": "demo-prio-ebce4120@example.com",
+  "password": "password123",
+  "org_id": "abbb42a8-24d3-469c-bc5d-477362176e3b",
+  "team_a_id": "3493b73f-5212-4a1f-8193-505d6605dda8",
+  "team_b_id": "5997d84b-c482-4694-a8d8-7757e250febd",
+  "channel_id": "c4535bff-0017-4c5a-8d85-1b0136ad5e4c",
+  "newest": [
+    {
+      "id": "ae9ceb40-1c9e-499d-9de0-dc8f87a0ec47",
+      "ai_priority": "p0",
+      "ai_priority_reason": "Active production outage impacting customer checkouts with an immediate rollback decision deadline (17:00 UTC today). This is a critical business impact requiring urgent resolution.",
+      "snippet": "URGENT: Production outage impacting customer checkouts is occurring RIGHT NOW. I"
+    },
+    {
+      "id": "229220c2-4a61-46d7-aa5b-3d241e44035f",
+      "ai_priority": "p2",
+      "ai_priority_reason": "The request involves reviewing a draft rollout checklist with no production risk and a soft deadline of this Friday. This is not time-sensitive or critical, but it is a planned task that should be addressed within the given timeframe.",
+      "snippet": "Could you take a look at the draft rollout checklist this week when you get a ch"
+    },
+    {
+      "id": "3d0372cf-6b67-4f44-8e6a-abf47ae83a41",
+      "ai_priority": "p2",
+      "ai_priority_reason": "The document is marked as optional FYI with no action required this quarter, indicating low urgency. The content is about office snack preferences for an upcoming meeting, which is not critical or time-sensitive.",
+      "snippet": "Optional FYI only. No action required this quarter. Here\u2019s some background on of"
+    }
+  ],
+  "priority": [
+    {
+      "id": "ae9ceb40-1c9e-499d-9de0-dc8f87a0ec47",
+      "ai_priority": "p0",
+      "ai_priority_reason": "Active production outage impacting customer checkouts with an immediate rollback decision deadline (17:00 UTC today). This is a critical business impact requiring urgent resolution.",
+      "snippet": "URGENT: Production outage impacting customer checkouts is occurring RIGHT NOW. I"
+    },
+    {
+      "id": "229220c2-4a61-46d7-aa5b-3d241e44035f",
+      "ai_priority": "p2",
+      "ai_priority_reason": "The request involves reviewing a draft rollout checklist with no production risk and a soft deadline of this Friday. This is not time-sensitive or critical, but it is a planned task that should be addressed within the given timeframe.",
+      "snippet": "Could you take a look at the draft rollout checklist this week when you get a ch"
+    },
+    {
+      "id": "3d0372cf-6b67-4f44-8e6a-abf47ae83a41",
+      "ai_priority": "p2",
+      "ai_priority_reason": "The document is marked as optional FYI with no action required this quarter, indicating low urgency. The content is about office snack preferences for an upcoming meeting, which is not critical or time-sensitive.",
+      "snippet": "Optional FYI only. No action required this quarter. Here\u2019s some background on of"
+    }
+  ],
+  "verdict": {
+    "ai_assigned_priorities": [
+      "p0",
+      "p2",
+      "p2"
+    ],
+    "priority_sort_monotonic": true,
+    "all_have_reasons": true,
+    "urgent_ranked_above_or_equal_fyi": true,
+    "pass": true
+  },
+  "web_url": "http://localhost:3000/en/teams/5997d84b-c482-4694-a8d8-7757e250febd/channels?orgId=abbb42a8-24d3-469c-bc5d-477362176e3b"
+}

@@ -4,7 +4,6 @@ import { useSetAtom } from "jotai";
 import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { apiClient, setTenantHeaders } from "@/lib/api-client";
 import { getAccessToken } from "@/lib/auth/token";
@@ -57,7 +56,7 @@ export function OnboardingForm() {
           ? (error as { response: { status: number } }).response.status
           : null;
       if (statusCode === 401) {
-        setStatus("Session expired — sign in again.");
+        setStatus("Session expired. Sign in again.");
         router.push(`/${params.locale || "en"}/login`);
       } else {
         setStatus("Onboarding failed. Check the API is running and try again.");
@@ -68,38 +67,31 @@ export function OnboardingForm() {
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Create org & team</CardTitle>
-      </CardHeader>
-      <CardContent className="flex flex-col gap-3">
-        <label className="text-sm" htmlFor="org-name">
-          Organization name
-        </label>
-        <Input
-          id="org-name"
-          value={orgName}
-          onChange={(e) => setOrgName(e.target.value)}
-          placeholder="Northwind Ops"
-        />
-        <label className="text-sm" htmlFor="team-name">
-          Team name
-        </label>
-        <Input
-          id="team-name"
-          value={teamName}
-          onChange={(e) => setTeamName(e.target.value)}
-          placeholder="Platform"
-        />
-        <Button
-          type="button"
-          disabled={loading || !orgName || !teamName}
-          onClick={() => void onSubmit()}
-        >
-          Continue
-        </Button>
-        {status ? <p className="text-sm text-muted-foreground">{status}</p> : null}
-      </CardContent>
-    </Card>
+    <div className="flex flex-col gap-3">
+      <Input
+        id="org-name"
+        value={orgName}
+        onChange={(e) => setOrgName(e.target.value)}
+        placeholder="Organization name"
+        aria-label="Organization name"
+        autoComplete="organization"
+      />
+      <Input
+        id="team-name"
+        value={teamName}
+        onChange={(e) => setTeamName(e.target.value)}
+        placeholder="Team name"
+        aria-label="Team name"
+        autoComplete="organization-title"
+      />
+      <Button
+        type="button"
+        disabled={loading || !orgName || !teamName}
+        onClick={() => void onSubmit()}
+      >
+        {loading ? "Creating…" : "Continue"}
+      </Button>
+      {status ? <output className="text-sm text-muted-foreground">{status}</output> : null}
+    </div>
   );
 }

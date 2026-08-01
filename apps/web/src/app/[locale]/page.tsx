@@ -17,20 +17,12 @@ export default async function HomePage({ params }: HomePageProps) {
       <p className="max-w-md text-center text-base text-muted-foreground">
         Cross-team channels with conflict review, suggestions, and audience adaptation.
       </p>
-      <div className="flex gap-3">
-        <Link
-          className="inline-flex h-10 items-center rounded-[10px] bg-primary px-4 text-sm font-medium text-primary-foreground transition-opacity duration-150 hover:opacity-90"
-          href={`/${locale}/login`}
-        >
-          Sign in
-        </Link>
-        <Link
-          className="inline-flex h-10 items-center rounded-[10px] border border-border bg-secondary px-4 text-sm font-medium text-foreground transition-colors duration-150 hover:bg-[#2c3038]"
-          href={`/${locale}/onboarding`}
-        >
-          Onboarding
-        </Link>
-      </div>
+      <Link
+        className="inline-flex h-10 items-center rounded-[10px] bg-primary px-4 text-sm font-medium text-primary-foreground transition-opacity duration-150 hover:opacity-90"
+        href={`/${locale}/login`}
+      >
+        Sign in
+      </Link>
     </main>
   );
 }

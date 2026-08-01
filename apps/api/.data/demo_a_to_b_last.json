@@ -1,0 +1,31 @@
+{
+  "api_base": "http://127.0.0.1:8000",
+  "email": "demo-a2b-e7b8ec26@example.com",
+  "username": "demo_a2b_e7b8ec26",
+  "password": "password123",
+  "org_id": "def01ce9-9443-4a57-a15e-da192235f4f8",
+  "team_a_id": "419d9166-4c59-4330-985a-3dc5ad960a04",
+  "team_b_id": "c962d88e-08a1-4842-b723-1d8aabeb7a80",
+  "channel_id": "d042b52c-58b7-4aa6-aea9-c7d1d43fb7cd",
+  "package_id": "60af86ee-3c1c-4d15-a1fa-2a1439d20636",
+  "document_id": "39371359-2e6a-4ffe-9c22-4123b627a2ac",
+  "document_status": "ready",
+  "included_node_ids": [
+    "435b1eb9-a41a-4231-9c6f-66f08bcc0932",
+    "00d71794-f7b9-4f11-8d23-f2d580a9370f",
+    "00b07373-8f0e-47c9-9cc9-d61009e82f6a",
+    "bc27efb8-84ba-4fb5-aaaa-df726ad4e552"
+  ],
+  "posts": [
+    {
+      "id": "4b210ae1-e791-47fb-97a6-e5fbb2beeb54",
+      "ai_priority": "p1"
+    }
+  ],
+  "web_urls": {
+    "login": "http://127.0.0.1:3000/en/login",
+    "team_a_documents": "http://127.0.0.1:3000/en/teams/419d9166-4c59-4330-985a-3dc5ad960a04/documents?orgId=def01ce9-9443-4a57-a15e-da192235f4f8",
+    "team_a_compose": "http://127.0.0.1:3000/en/teams/419d9166-4c59-4330-985a-3dc5ad960a04/compose?orgId=def01ce9-9443-4a57-a15e-da192235f4f8",
+    "team_b_channels": "http://127.0.0.1:3000/en/teams/c962d88e-08a1-4842-b723-1d8aabeb7a80/channels?orgId=def01ce9-9443-4a57-a15e-da192235f4f8"
+  }
+}

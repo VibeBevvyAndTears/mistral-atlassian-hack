@@ -1,9 +1,18 @@
 "use client";
 
-import { CaretDown, House, Lightbulb, SquaresFour, Warning } from "@phosphor-icons/react";
+import {
+  CaretDown,
+  House,
+  Lightbulb,
+  Plus,
+  SquaresFour,
+  UserPlus,
+  Warning,
+} from "@phosphor-icons/react";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useId, useState } from "react";
 import { ConveBrandMark } from "@/components/domain/conve-brand-mark";
+import { apiClient } from "@/lib/api-client";
 import { cn } from "@/lib/utils";
 
 export interface AppSidebarTeam {
@@ -23,6 +32,8 @@ interface AppSidebarNavProps {
   onSelectOrgTeam: (teamId: string | null) => void;
   mobileOpen: boolean;
   onMobileOpenChange: (open: boolean) => void;
+  /** Called after a new team is created so the caller can refresh org/my team lists. */
+  onTeamCreated?: () => void | Promise<void>;
 }
 
 function TeamIconTile({ label }: { label: string }) {
@@ -59,6 +70,7 @@ export function AppSidebarNav({
   onSelectOrgTeam,
   mobileOpen,
   onMobileOpenChange,
+  onTeamCreated,
 }: AppSidebarNavProps) {
   const [orgOpen, setOrgOpen] = useState(true);
   const [myOpen, setMyOpen] = useState(true);
@@ -69,6 +81,94 @@ export function AppSidebarNav({
   }, []);
   const q = orgId ? `?orgId=${encodeURIComponent(orgId)}` : "";
 
+  const newTeamInputId = useId();
+  const [creatingTeam, setCreatingTeam] = useState(false);
+  const [newTeamName, setNewTeamName] = useState("");
+  const [creatingTeamLoading, setCreatingTeamLoading] = useState(false);
+  const [createTeamError, setCreateTeamError] = useState<string | null>(null);
+
+  const inviteInputId = useId();
+  const [invitingMember, setInvitingMember] = useState(false);
+  const [inviteIdentifier, setInviteIdentifier] = useState("");
+  const [invitingMemberLoading, setInvitingMemberLoading] = useState(false);
+  const [inviteStatus, setInviteStatus] = useState<{
+    kind: "success" | "error";
+    message: string;
+  } | null>(null);
+
+  function startCreateTeam() {
+    setOrgOpen(true);
+    setInvitingMember(false);
+    setCreatingTeam(true);
+    setCreateTeamError(null);
+  }
+
+  function cancelCreateTeam() {
+    setCreatingTeam(false);
+    setNewTeamName("");
+    setCreateTeamError(null);
+  }
+
+  async function submitCreateTeam() {
+    const name = newTeamName.trim();
+    if (!name || !orgId) return;
+    setCreatingTeamLoading(true);
+    setCreateTeamError(null);
+    try {
+      await apiClient.post(`/api/orgs/${orgId}/teams`, { name });
+      setNewTeamName("");
+      setCreatingTeam(false);
+      await onTeamCreated?.();
+    } catch {
+      setCreateTeamError("Could not create team.");
+    } finally {
+      setCreatingTeamLoading(false);
+    }
+  }
+
+  function startInviteMember() {
+    setOrgOpen(true);
+    setCreatingTeam(false);
+    setInvitingMember(true);
+    setInviteStatus(null);
+  }
+
+  function cancelInviteMember() {
+    setInvitingMember(false);
+    setInviteIdentifier("");
+    setInviteStatus(null);
+  }
+
+  async function submitInviteMember() {
+    const trimmed = inviteIdentifier.trim();
+    if (!trimmed || !activeTeamId) return;
+    setInvitingMemberLoading(true);
+    setInviteStatus(null);
+    const body = trimmed.includes("@")
+      ? { email: trimmed, role: "member" }
+      : { username: trimmed.toLowerCase(), role: "member" };
+    try {
+      const { data } = await apiClient.post<{ added_immediately?: boolean; email: string }>(
+        `/api/teams/${activeTeamId}/invites`,
+        body
+      );
+      setInviteIdentifier("");
+      setInviteStatus({
+        kind: "success",
+        message: data.added_immediately
+          ? `Added ${data.email} to the team.`
+          : `Invite created for ${data.email}.`,
+      });
+    } catch {
+      setInviteStatus({
+        kind: "error",
+        message: "Could not invite - use a known username or email (Lead/Owner required).",
+      });
+    } finally {
+      setInvitingMemberLoading(false);
+    }
+  }
+
   function renderNav() {
     return (
       <nav
@@ -77,7 +177,7 @@ export function AppSidebarNav({
       >
         <div className="flex flex-col gap-3 p-3">
           <Link
-            href={`/${locale}`}
+            href={`/${locale}/teams/${activeTeamId}/channels${q}`}
             className="inline-flex items-center rounded-[10px] px-1 py-1 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
             onClick={() => onMobileOpenChange(false)}
             aria-label="Conve home"
@@ -85,7 +185,7 @@ export function AppSidebarNav({
             <ConveBrandMark size="sm" />
           </Link>
           <Link
-            href={`/${locale}`}
+            href={`/${locale}/teams/${activeTeamId}/channels${q}`}
             className="inline-flex h-10 items-center gap-2 rounded-full bg-[var(--sidebar-accent)] px-4 text-sm font-medium text-foreground transition-colors hover:bg-[#2c3038] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
             onClick={() => onMobileOpenChange(false)}
           >
@@ -96,19 +196,138 @@ export function AppSidebarNav({
 
         <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-3 pb-3">
           <section>
-            <button
-              type="button"
-              className="flex w-full items-center gap-1 py-1 text-left text-xs font-semibold tracking-wide text-muted-foreground"
-              aria-expanded={orgOpen}
-              onClick={() => setOrgOpen((v) => !v)}
-            >
-              <CaretDown
-                className={cn("size-3 transition-transform", !orgOpen && "-rotate-90")}
-                weight="bold"
-                aria-hidden
-              />
-              Your organisation
-            </button>
+            <div className="flex items-center gap-1">
+              <button
+                type="button"
+                className="flex flex-1 items-center gap-1 py-1 text-left text-xs font-semibold tracking-wide text-muted-foreground"
+                aria-expanded={orgOpen}
+                onClick={() => setOrgOpen((v) => !v)}
+              >
+                <CaretDown
+                  className={cn("size-3 transition-transform", !orgOpen && "-rotate-90")}
+                  weight="bold"
+                  aria-hidden
+                />
+                Your organisation
+              </button>
+              <button
+                type="button"
+                className="flex size-6 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-[var(--sidebar-accent)] hover:text-foreground"
+                aria-label="Invite member"
+                aria-expanded={invitingMember}
+                onClick={() => (invitingMember ? cancelInviteMember() : startInviteMember())}
+                disabled={!orgId || !activeTeamId}
+              >
+                <UserPlus className="size-3.5" weight="bold" aria-hidden />
+              </button>
+              <button
+                type="button"
+                className="flex size-6 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-[var(--sidebar-accent)] hover:text-foreground"
+                aria-label="Create team"
+                aria-expanded={creatingTeam}
+                onClick={() => (creatingTeam ? cancelCreateTeam() : startCreateTeam())}
+                disabled={!orgId}
+              >
+                <Plus className="size-3.5" weight="bold" aria-hidden />
+              </button>
+            </div>
+            {invitingMember ? (
+              <div className="mt-1 flex flex-col gap-1.5 rounded-lg border border-[var(--sidebar-border)] bg-[var(--sidebar-accent)]/40 p-2">
+                <label className="sr-only" htmlFor={inviteInputId}>
+                  Username or email
+                </label>
+                <input
+                  id={inviteInputId}
+                  type="text"
+                  value={inviteIdentifier}
+                  onChange={(event) => setInviteIdentifier(event.target.value)}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter") {
+                      event.preventDefault();
+                      void submitInviteMember();
+                    } else if (event.key === "Escape") {
+                      cancelInviteMember();
+                    }
+                  }}
+                  placeholder="Username or email"
+                  disabled={invitingMemberLoading}
+                  className="h-9 rounded-md border border-[var(--sidebar-border)] bg-[var(--sidebar)] px-2 text-sm text-foreground outline-none placeholder:text-muted-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+                />
+                {inviteStatus ? (
+                  <p
+                    className={cn(
+                      "text-xs",
+                      inviteStatus.kind === "error" ? "text-destructive" : "text-muted-foreground"
+                    )}
+                  >
+                    {inviteStatus.message}
+                  </p>
+                ) : null}
+                <div className="flex gap-1.5">
+                  <button
+                    type="button"
+                    className="h-7 flex-1 rounded-md bg-foreground px-2 text-xs font-medium text-background transition-opacity hover:opacity-90 disabled:opacity-50"
+                    disabled={invitingMemberLoading || !inviteIdentifier.trim()}
+                    onClick={() => void submitInviteMember()}
+                  >
+                    {invitingMemberLoading ? "Inviting…" : "Invite"}
+                  </button>
+                  <button
+                    type="button"
+                    className="h-7 rounded-md px-2 text-xs text-muted-foreground hover:bg-[var(--sidebar-accent)] hover:text-foreground"
+                    disabled={invitingMemberLoading}
+                    onClick={cancelInviteMember}
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            ) : null}
+            {creatingTeam ? (
+              <div className="mt-1 flex flex-col gap-1.5 rounded-lg border border-[var(--sidebar-border)] bg-[var(--sidebar-accent)]/40 p-2">
+                <label className="sr-only" htmlFor={newTeamInputId}>
+                  New team name
+                </label>
+                <input
+                  id={newTeamInputId}
+                  type="text"
+                  value={newTeamName}
+                  onChange={(event) => setNewTeamName(event.target.value)}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter") {
+                      event.preventDefault();
+                      void submitCreateTeam();
+                    } else if (event.key === "Escape") {
+                      cancelCreateTeam();
+                    }
+                  }}
+                  placeholder="Team name"
+                  disabled={creatingTeamLoading}
+                  className="h-9 rounded-md border border-[var(--sidebar-border)] bg-[var(--sidebar)] px-2 text-sm text-foreground outline-none placeholder:text-muted-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+                />
+                {createTeamError ? (
+                  <p className="text-xs text-destructive">{createTeamError}</p>
+                ) : null}
+                <div className="flex gap-1.5">
+                  <button
+                    type="button"
+                    className="h-7 flex-1 rounded-md bg-foreground px-2 text-xs font-medium text-background transition-opacity hover:opacity-90 disabled:opacity-50"
+                    disabled={creatingTeamLoading || !newTeamName.trim()}
+                    onClick={() => void submitCreateTeam()}
+                  >
+                    {creatingTeamLoading ? "Creating…" : "Create"}
+                  </button>
+                  <button
+                    type="button"
+                    className="h-7 rounded-md px-2 text-xs text-muted-foreground hover:bg-[var(--sidebar-accent)] hover:text-foreground"
+                    disabled={creatingTeamLoading}
+                    onClick={cancelCreateTeam}
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            ) : null}
             {orgOpen ? (
               <ul className="mt-1 flex flex-col gap-0.5">
                 {!mounted ? (

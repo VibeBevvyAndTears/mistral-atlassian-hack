@@ -213,6 +213,7 @@ export function AppShell({ children, mainId = "app-main" }: Readonly<AppShellPro
           onSelectOrgTeam={setSelectedOrgTeamId}
           mobileOpen={mobileNavOpen}
           onMobileOpenChange={setMobileNavOpen}
+          onTeamCreated={reloadNav}
         />
 
         <div className="flex min-w-0 flex-1 flex-col">

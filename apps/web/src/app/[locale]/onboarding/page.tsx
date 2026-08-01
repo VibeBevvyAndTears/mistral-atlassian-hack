@@ -12,10 +12,8 @@ export default async function OnboardingPage({ params }: Props) {
   setRequestLocale(locale as Locale);
 
   return (
-    <main className="flex min-h-svh flex-col items-center bg-background px-6 py-16 text-foreground">
-      <div className="mb-6">
-        <ConveBrandMark size="lg" priority />
-      </div>
+    <main className="flex min-h-svh flex-col items-center justify-center gap-6 bg-background px-6 py-16 text-foreground">
+      <ConveBrandMark size="lg" priority />
       <h1 className="sr-only">Onboarding</h1>
       <OnboardingTabs />
     </main>

@@ -25,8 +25,8 @@ class Settings(BaseSettings):
     DATABASE_URL: str = "postgresql+asyncpg://postgres:postgres@localhost:5432/app"
     DATABASE_URL_SYNC: str = "postgresql://postgres:postgres@localhost:5432/app"
 
-    # CORS
-    CORS_ORIGINS: list[str] = ["http://localhost:3000"]
+    # CORS — include both localhost and 127.0.0.1 (demo scripts / browsers differ)
+    CORS_ORIGINS: list[str] = ["http://localhost:3000", "http://127.0.0.1:3000"]
 
     # Request limits (edge WAFs cannot enforce body size; the app does)
     MAX_BODY_SIZE: int = 1_048_576  # 1 MiB

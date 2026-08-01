@@ -1,0 +1,27 @@
+{
+  "api_base": "http://127.0.0.1:8000",
+  "email": "demo-conflict-81e8b5ca@example.com",
+  "password": "password123",
+  "org_id": "fbfae41f-9980-4133-97a2-b587a75f267c",
+  "team_a_id": "093ceeb3-a946-4576-8ab4-972bad677b78",
+  "team_b_id": "e5e2cd06-434a-449b-bc8f-34af267c0091",
+  "channel_id": "c18c489c-3990-415b-83b8-f3940366dc4a",
+  "post_id": "707793e8-9804-4ec9-b24b-1d7efa2ad48d",
+  "package_id": "25814c26-e82f-474a-8851-80aed5c9d0b8",
+  "suggestion_id": "b57579db-a8da-4168-95bf-e8362d56c8da",
+  "target_node_id": "ae2cd048-629c-4cd1-b680-f64f871cbd9e",
+  "dual_team_approve_before_apply": false,
+  "flow": [
+    "b_request_changes",
+    "b_suggestion",
+    "a_edit_applied_immediately",
+    "b_close_thread"
+  ],
+  "node_summary_after": "Ship Monday 09:00 UTC. Friday release is cancelled. Marketing must be corrected before handoff.",
+  "post_adapted_after": "Team A decided to proceed with the Monday shipment instead of Friday. The updated plan is being shared with your team.",
+  "web_urls": {
+    "login": "http://localhost:3000/en/login",
+    "team_b_channels": "http://localhost:3000/en/teams/e5e2cd06-434a-449b-bc8f-34af267c0091/channels?orgId=fbfae41f-9980-4133-97a2-b587a75f267c",
+    "team_a_suggestions": "http://localhost:3000/en/teams/093ceeb3-a946-4576-8ab4-972bad677b78/suggestions?orgId=fbfae41f-9980-4133-97a2-b587a75f267c"
+  }
+}

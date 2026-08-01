@@ -14,7 +14,7 @@ export function LoginForm() {
   const params = useParams<{ locale: string }>();
   const router = useRouter();
   const locale = params.locale || "en";
-  const [mode, setMode] = useState<Mode>("signup");
+  const [mode, setMode] = useState<Mode>("signin");
   const [email, setEmail] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");

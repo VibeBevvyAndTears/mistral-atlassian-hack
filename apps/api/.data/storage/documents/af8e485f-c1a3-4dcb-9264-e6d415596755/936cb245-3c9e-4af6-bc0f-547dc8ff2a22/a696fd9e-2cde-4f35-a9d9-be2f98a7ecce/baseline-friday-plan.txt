@@ -1,0 +1,4 @@
+Team A release plan (baseline).
+Decision: We will ship on Friday.
+Constraint: Rollback window is 2 hours after Friday cutover.
+Owner: platform lead.
